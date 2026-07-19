@@ -1,0 +1,90 @@
+@if (loading()) {
+  <div class="page-loading"><ajax-spinner /></div>
+} @else if (snapshot(); as data) {
+  <section class="dash">
+    <header class="dash__intro">
+      <div>
+        <p class="eyebrow">Your dashboard</p>
+        <h2>Welcome back, {{ data.displayName }}</h2>
+        <p class="lede">Personal activity on top of the shared digital library.</p>
+      </div>
+      <div class="dash__quick">
+        <a routerLink="/games"><ajax-button variant="flat" color="primary" icon="sports_esports">Browse library</ajax-button></a>
+        <a routerLink="/uploads"><ajax-button variant="stroked" icon="upload_file">Upload</ajax-button></a>
+        <a routerLink="/systems"><ajax-button variant="stroked" icon="devices">Systems</ajax-button></a>
+      </div>
+    </header>
+
+    <div class="dash__stats">
+      <article class="stat stat--personal">
+        <ajax-icon name="star" />
+        <strong>{{ data.stats.myFavorites }}</strong>
+        <span>Your favorites</span>
+      </article>
+      <article class="stat stat--personal">
+        <ajax-icon name="download" />
+        <strong>{{ data.stats.myDownloads }}</strong>
+        <span>Your downloads</span>
+      </article>
+      <article class="stat">
+        <ajax-icon name="sports_esports" />
+        <strong>{{ data.stats.libraryGames }}</strong>
+        <span>Shared library titles</span>
+      </article>
+      <article class="stat">
+        <ajax-icon name="inventory_2" />
+        <strong>{{ data.stats.physicalGames }}</strong>
+        <span>Physical items</span>
+      </article>
+    </div>
+
+    @if (data.attention.length) {
+      <ajax-card title="Needs your attention" subtitle="Personal + library follow-ups">
+        <div class="attention">
+          @for (item of data.attention; track item.id) {
+            <a class="attention__item" [routerLink]="item.link">
+              <ajax-status-chip [label]="item.count + ' · ' + item.label" [status]="item.tone" />
+            </a>
+          }
+        </div>
+      </ajax-card>
+    }
+
+    <section class="recent">
+      <div class="recent__head">
+        <h3>Your favorites</h3>
+        <a routerLink="/games"><ajax-button variant="basic" icon="arrow_forward">Shared library</ajax-button></a>
+      </div>
+      <div class="recent__row">
+        @for (game of data.favorites; track game.id) {
+          <a class="cover" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+            <span class="cover__title">{{ game.title }}</span>
+            <span class="cover__meta">{{ game.system }}</span>
+          </a>
+        } @empty {
+          <p class="empty-inline">Star titles in the shared library to pin them here.</p>
+        }
+      </div>
+    </section>
+
+    <section class="recent">
+      <div class="recent__head">
+        <h3>Recently active for you</h3>
+      </div>
+      <div class="recent__row">
+        @for (game of data.recent; track game.id) {
+          <a class="cover" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+            <span class="cover__title">{{ game.title }}</span>
+            <span class="cover__meta">{{ game.system }}</span>
+          </a>
+        }
+      </div>
+    </section>
+  </section>
+} @else {
+  <ajax-empty-state
+    icon="dashboard"
+    title="Dashboard unavailable"
+    description="Could not load your personal snapshot."
+  />
+}

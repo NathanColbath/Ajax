@@ -1,0 +1,65 @@
+<section class="systems">
+  <header class="systems__head">
+    <div>
+      <p class="eyebrow">Platform registry</p>
+      <h2>Game systems</h2>
+    </div>
+    <ajax-button variant="flat" color="primary" icon="add" (clicked)="openAdd()">Add system</ajax-button>
+  </header>
+
+  @if (showAdd()) {
+    <div class="add-panel">
+      <ajax-input label="Name" [(ngModel)]="draftName" name="name" placeholder="Neo Geo AES" />
+      <ajax-input label="Short name" [(ngModel)]="draftShort" name="short" placeholder="AES" />
+      <ajax-input label="Manufacturer" [(ngModel)]="draftManufacturer" name="mfg" />
+      <div class="add-panel__actions">
+        <ajax-button variant="stroked" (clicked)="showAdd.set(false)">Cancel</ajax-button>
+        <ajax-button variant="flat" color="primary" (clicked)="createSystem()">Save</ajax-button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else {
+    <div class="systems__layout">
+      <div class="cards">
+        @for (system of systems(); track system.id) {
+          <button
+            type="button"
+            class="sys-card"
+            [class.is-active]="selectedId() === system.id"
+            [style.--accent]="system.accent"
+            (click)="select(system.id)"
+          >
+            <ajax-status-chip [label]="system.shortName" status="info" />
+            <strong>{{ system.name }}</strong>
+            <span>{{ system.manufacturer }} · {{ system.gameCount }} games</span>
+          </button>
+        }
+      </div>
+
+      @if (selected(); as system) {
+        <aside class="panel">
+          <h3>{{ system.name }}</h3>
+          <p>Map file extensions used for auto-matching uploads.</p>
+          <div class="exts">
+            @for (ext of system.extensions; track ext) {
+              <ajax-status-chip [label]="ext" status="neutral" />
+            }
+          </div>
+          <div class="ext-add">
+            <ajax-input
+              label="New extension"
+              placeholder=".iso"
+              [ngModel]="newExtension()"
+              (ngModelChange)="newExtension.set($event)"
+              name="ext"
+            />
+            <ajax-button variant="flat" color="primary" (clicked)="addExtension()">Add</ajax-button>
+          </div>
+        </aside>
+      }
+    </div>
+  }
+</section>

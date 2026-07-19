@@ -1,0 +1,49 @@
+<section class="uploads">
+  <header>
+    <p class="eyebrow">Import workflow</p>
+    <h2>Upload digital files</h2>
+  </header>
+
+  <div class="uploads__layout">
+    <div class="uploads__main">
+      <ajax-select
+        label="Target system"
+        placeholder="Optional — auto-detect later"
+        [ngModel]="systemId()"
+        (ngModelChange)="systemId.set($event)"
+        name="system"
+      >
+        @for (system of systems(); track system.id) {
+          <ajax-select-option [value]="system.id" [label]="system.name" />
+        }
+      </ajax-select>
+
+      <ajax-upload-dropzone
+        [multiple]="true"
+        accept=".nes,.sfc,.smc,.md,.gen,.bin,.cue,.iso,.chd,.zip"
+        (filesSelected)="onFiles($event)"
+      />
+
+      @if (loading()) {
+        <div class="page-loading"><ajax-spinner /></div>
+      } @else if (queueItems().length === 0) {
+        <ajax-empty-state
+          icon="upload_file"
+          title="Queue is empty"
+          description="Drop ROM dumps or related media to begin."
+        />
+      } @else {
+        <ajax-upload-queue
+          [items]="queueItems()"
+          (cancel)="cancel($event)"
+          (retry)="retry($event)"
+        />
+      }
+    </div>
+
+    <aside class="uploads__side">
+      <h3>What happens next</h3>
+      <ajax-progress-action [steps]="steps()" />
+    </aside>
+  </div>
+</section>

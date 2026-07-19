@@ -1,0 +1,32 @@
+:root {
+  --ajax-motion-instant: 80ms;
+  --ajax-motion-fast: 140ms;
+  --ajax-motion-standard: 220ms;
+  --ajax-motion-emphasized: 320ms;
+
+  --ajax-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ajax-easing-enter: cubic-bezier(0, 0, 0, 1);
+  --ajax-easing-exit: cubic-bezier(0.3, 0, 1, 1);
+
+  --ajax-color-success: #1b7f5a;
+  --ajax-color-warning: #b86e00;
+  --ajax-color-danger: #c62828;
+  --ajax-color-info: #1565c0;
+  --ajax-color-neutral: #5f6368;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ajax-motion-instant: 1ms;
+    --ajax-motion-fast: 1ms;
+    --ajax-motion-standard: 1ms;
+    --ajax-motion-emphasized: 1ms;
+  }
+
+  .ajax-motion-sensitive,
+  .ajax-motion-sensitive * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

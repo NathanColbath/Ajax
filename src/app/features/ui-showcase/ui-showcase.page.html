@@ -1,0 +1,387 @@
+<section class="showcase">
+  <header class="showcase__header">
+    <ajax-breadcrumb [items]="breadcrumbs" />
+    <h1>Shared UI</h1>
+    <p>Material wrappers used across the Game Library app. Each block below demos an <code>ajax-*</code> component.</p>
+  </header>
+
+  <nav class="showcase__toc" aria-label="Component sections">
+    <a href="#actions">Actions</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#layout">Layout</a>
+    <a href="#forms">Forms</a>
+    <a href="#data">Data</a>
+    <a href="#navigation">Navigation</a>
+    <a href="#interactions">Interactions</a>
+  </nav>
+
+  <section id="actions" class="showcase__section">
+    <h2>Actions &amp; feedback</h2>
+
+    <ajax-card title="Buttons" subtitle="ajax-button">
+      <div class="row wrap">
+        <ajax-button variant="basic" color="primary">Basic</ajax-button>
+        <ajax-button variant="raised" color="primary">Raised</ajax-button>
+        <ajax-button variant="flat" color="primary">Flat</ajax-button>
+        <ajax-button variant="stroked" color="primary">Stroked</ajax-button>
+        <ajax-button variant="flat" color="warn" icon="delete">Warn</ajax-button>
+        <ajax-button variant="icon" icon="favorite" ariaLabel="Favorite" />
+        <ajax-button variant="flat" [disabled]="true">Disabled</ajax-button>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Icons &amp; badges" subtitle="ajax-icon · ajax-badge">
+      <div class="row wrap">
+        <ajax-icon name="sports_esports" color="primary" />
+        <ajax-icon name="library_books" color="accent" />
+        <ajax-badge [content]="3">
+          <ajax-button variant="icon" icon="notifications" ariaLabel="Notifications" />
+        </ajax-badge>
+        <ajax-badge content="New" color="warn" position="above before">
+          <ajax-button variant="stroked">Inbox</ajax-button>
+        </ajax-badge>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Spinners &amp; progress" subtitle="ajax-spinner · ajax-progress">
+      <div class="row wrap align-center">
+        <ajax-spinner />
+        <ajax-spinner mode="determinate" [value]="progressValue()" [diameter]="48" />
+      </div>
+      <div class="stack mt">
+        <ajax-progress [value]="progressValue()" />
+        <ajax-progress mode="indeterminate" color="accent" />
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Toast &amp; dialog" subtitle="AjaxToast · AjaxDialog">
+      <div class="row wrap">
+        <ajax-button variant="stroked" (clicked)="showToast('success')">Success toast</ajax-button>
+        <ajax-button variant="stroked" (clicked)="showToast('info')">Info toast</ajax-button>
+        <ajax-button variant="stroked" (clicked)="showToast('warn')">Warn toast</ajax-button>
+        <ajax-button variant="stroked" color="warn" (clicked)="showToast('error')">Error toast</ajax-button>
+        <ajax-button variant="flat" color="primary" (clicked)="openConfirm()">Confirm dialog</ajax-button>
+      </div>
+    </ajax-card>
+  </section>
+
+  <ajax-divider />
+
+  <section id="layout" class="showcase__section">
+    <h2>Layout &amp; containers</h2>
+
+    <ajax-card title="Panels" subtitle="ajax-panel · ajax-header-button-group">
+      <div class="stack">
+        <ajax-panel title="Digital catalog" description="ROM and metadata notes">
+          <ajax-header-button-group headerActions ariaLabel="Catalog actions">
+            <ajax-header-button
+              icon="upload_file"
+              label="Import"
+              (clicked)="onHeaderAction('Import')"
+            />
+            <ajax-header-button
+              icon="manage_search"
+              label="Scan"
+              (clicked)="onHeaderAction('Scan')"
+            />
+            <ajax-header-button
+              icon="filter_list"
+              label="Filter"
+              (clicked)="onHeaderAction('Filter')"
+            />
+          </ajax-header-button-group>
+          Always-open section panels organize related content without collapse chrome.
+        </ajax-panel>
+        <ajax-panel title="Physical collection" description="Boxes, manuals, and condition">
+          <ajax-header-button-group headerActions ariaLabel="Collection actions">
+            <ajax-header-button icon="add_box" label="Add" (clicked)="onHeaderAction('Add')" />
+            <ajax-header-button
+              icon="edit"
+              label="Edit"
+              (clicked)="onHeaderAction('Edit')"
+            />
+            <ajax-header-button
+              icon="ios_share"
+              label="Export"
+              [disabled]="true"
+              tooltip="Export coming soon"
+            />
+          </ajax-header-button-group>
+          Track shelves, condition grades, and completeness here.
+          <ajax-button actions variant="stroked" color="primary">Edit section</ajax-button>
+        </ajax-panel>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Accordion" subtitle="ajax-accordion · ajax-expansion">
+      <ajax-accordion>
+        <ajax-expansion title="Digital catalog" description="ROM and metadata notes" [expanded]="true">
+          Expansion panels wrap content that should stay collapsed until needed.
+        </ajax-expansion>
+        <ajax-expansion title="Physical collection" description="Boxes, manuals, and condition">
+          Track shelves, condition grades, and completeness here.
+          <ajax-button actions variant="stroked" color="primary">View items</ajax-button>
+        </ajax-expansion>
+      </ajax-accordion>
+    </ajax-card>
+
+    <ajax-card title="Tabs" subtitle="ajax-tabs · ajax-tab">
+      <ajax-tabs>
+        <ajax-tab label="Overview">Browse systems, titles, and ownership at a glance.</ajax-tab>
+        <ajax-tab label="Files">Upload and organize ROM files by system.</ajax-tab>
+        <ajax-tab label="Settings" [disabled]="true">Disabled tab example</ajax-tab>
+      </ajax-tabs>
+    </ajax-card>
+
+    <ajax-card title="Drawer" subtitle="ajax-drawer">
+      <ajax-drawer [(opened)]="drawerOpen" mode="over">
+        <div drawer class="drawer-panel">
+          <h3>Filters</h3>
+          <p>System, region, and ownership filters will live here.</p>
+          <ajax-button variant="stroked" (clicked)="drawerOpen.set(false)">Close</ajax-button>
+        </div>
+        <div class="drawer-main">
+          <ajax-button variant="flat" color="primary" icon="menu" (clicked)="drawerOpen.set(true)">
+            Open drawer
+          </ajax-button>
+          <p>Main content sits beside the sidenav.</p>
+        </div>
+      </ajax-drawer>
+    </ajax-card>
+
+    <ajax-card title="Chips" subtitle="ajax-chip-list">
+      <ajax-chip-list [chips]="chips()" [removable]="true" (removed)="removeChip($event)" />
+    </ajax-card>
+  </section>
+
+  <ajax-divider />
+
+  <section id="forms" class="showcase__section">
+    <h2>Forms</h2>
+
+    <ajax-card title="Form controls" subtitle="Self-contained ajax field wrappers">
+      <form class="form-grid" (submit)="$event.preventDefault()">
+        <ajax-input
+          label="Game title"
+          hint="Display name in the catalog"
+          [(ngModel)]="name"
+          name="name"
+          placeholder="e.g. Super Metroid"
+        />
+
+        <ajax-select
+          label="System"
+          [(ngModel)]="system"
+          name="system"
+          placeholder="Choose a system"
+        >
+          <ajax-select-option value="nes" label="Nintendo Entertainment System" />
+          <ajax-select-option value="genesis" label="Sega Genesis" />
+          <ajax-select-option value="ps1" label="PlayStation" />
+        </ajax-select>
+
+        <ajax-textarea
+          label="Notes"
+          [(ngModel)]="notes"
+          name="notes"
+          [rows]="4"
+          placeholder="Condition, edition, box notes…"
+        />
+
+        <ajax-datepicker label="Release date" [(ngModel)]="releaseDate" name="releaseDate" />
+
+        <div class="stack">
+          <ajax-checkbox [(ngModel)]="owned" name="owned">Owned</ajax-checkbox>
+          <ajax-slide-toggle [(ngModel)]="favorite" name="favorite">Favorite</ajax-slide-toggle>
+          <ajax-radio-group [(ngModel)]="region" name="region">
+            <ajax-radio value="ntsc" label="NTSC" />
+            <ajax-radio value="pal" label="PAL" />
+            <ajax-radio value="other" label="Other" />
+          </ajax-radio-group>
+        </div>
+
+        <div class="row">
+          <ajax-button variant="flat" color="primary" type="submit" icon="save">Save demo form</ajax-button>
+        </div>
+      </form>
+    </ajax-card>
+
+    <ajax-card title="Validation" subtitle="ajaxControl · reactive FormGroup">
+      <form class="form-grid" [formGroup]="validationForm" (ngSubmit)="submitValidationForm()">
+        <ajax-input
+          label="Name"
+          hint="Required, at least 3 characters"
+          formControlName="name"
+          placeholder="Your name"
+        />
+        <ajax-input
+          label="Email"
+          hint="Required email address"
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+        />
+        <ajax-textarea
+          label="Notes"
+          hint="Optional, max 200 characters"
+          formControlName="notes"
+          [rows]="3"
+          placeholder="Optional notes"
+        />
+        <div class="row">
+          <ajax-button variant="flat" color="primary" type="submit" icon="check">Submit</ajax-button>
+        </div>
+      </form>
+    </ajax-card>
+  </section>
+
+  <ajax-divider />
+
+  <section id="data" class="showcase__section">
+    <h2>Data display</h2>
+
+    <ajax-card title="Table &amp; pagination" subtitle="ajax-table · ajax-pagination">
+      <ajax-table [columns]="columns" [data]="pagedRows()" />
+      <ajax-pagination
+        [length]="totalRows"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
+    </ajax-card>
+
+    <ajax-card title="List" subtitle="ajax-list">
+      <ajax-list [items]="listItems" [nav]="true" />
+    </ajax-card>
+
+    <ajax-card title="Tooltip" subtitle="ajaxTooltip">
+      <ajax-button
+        variant="stroked"
+        ajaxTooltip="Tooltips wrap matTooltip for short helper text"
+        ajaxTooltipPosition="above"
+      >
+        Hover me
+      </ajax-button>
+    </ajax-card>
+  </section>
+
+  <ajax-divider />
+
+  <section id="navigation" class="showcase__section">
+    <h2>Navigation</h2>
+
+    <ajax-card title="Menu" subtitle="ajax-menu · ajax-menu-item">
+      <ajax-menu label="Collection actions" icon="folder">
+        <ajax-menu-item label="Import metadata" icon="cloud_download" (clicked)="onMenuAction('import')" />
+        <ajax-menu-item label="Export library" icon="ios_share" (clicked)="onMenuAction('export')" />
+        <ajax-menu-item label="Danger zone" icon="warning" [disabled]="true" />
+      </ajax-menu>
+    </ajax-card>
+
+    <ajax-card title="Breadcrumb" subtitle="ajax-breadcrumb">
+      <ajax-breadcrumb [items]="breadcrumbs" />
+    </ajax-card>
+  </section>
+
+  <ajax-divider />
+
+  <section id="interactions" class="showcase__section">
+    <h2>Interactions</h2>
+
+    <ajax-card title="Action button" subtitle="ajax-action-button">
+      <div class="row wrap">
+        <ajax-action-button
+          label="Save changes"
+          loadingLabel="Saving"
+          successLabel="Saved"
+          errorLabel="Save failed"
+          icon="save"
+          [state]="saveState()"
+          (action)="runSaveDemo()"
+        />
+        <ajax-button variant="stroked" (clicked)="saveState.set('idle')">Reset</ajax-button>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Icon action" subtitle="ajax-icon-action">
+      <div class="row wrap">
+        <ajax-icon-action
+          icon="content_copy"
+          label="Copy value"
+          [state]="copyIconState()"
+          (action)="runCopyIconDemo()"
+        />
+        <ajax-icon-action icon="refresh" label="Refresh" [state]="'idle'" (action)="feedback.info('Refreshed')" />
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Inline save &amp; status" subtitle="ajax-inline-save-status · ajax-status-chip">
+      <div class="stack">
+        <div class="row wrap">
+          <ajax-button variant="stroked" (clicked)="inlineSaveState.set('unsaved')">Unsaved</ajax-button>
+          <ajax-button variant="stroked" (clicked)="inlineSaveState.set('saving')">Saving</ajax-button>
+          <ajax-button variant="stroked" (clicked)="inlineSaveState.set('saved')">Saved</ajax-button>
+          <ajax-button variant="stroked" (clicked)="inlineSaveState.set('failed')">Failed</ajax-button>
+        </div>
+        <ajax-inline-save-status [state]="inlineSaveState()" (retry)="inlineSaveState.set('saving')" />
+        <div class="row wrap">
+          <ajax-status-chip label="Neutral" status="neutral" />
+          <ajax-status-chip label="Info" status="info" icon="info" />
+          <ajax-status-chip label="Success" status="success" icon="check_circle" />
+          <ajax-status-chip label="Warning" status="warning" icon="warning" />
+          <ajax-status-chip label="Danger" status="danger" icon="error" />
+        </div>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Feedback &amp; confirmation" subtitle="AjaxFeedbackService · AjaxConfirmationService">
+      <div class="row wrap">
+        <ajax-button variant="stroked" (clicked)="feedback.success('Changes saved')">Success</ajax-button>
+        <ajax-button variant="stroked" (clicked)="feedback.warning('Check required fields')">Warning</ajax-button>
+        <ajax-button variant="stroked" color="warn" (clicked)="showErrorWithRetry()">Error + retry</ajax-button>
+        <ajax-button variant="stroked" (clicked)="showUndoable()">Undoable</ajax-button>
+        <ajax-button variant="flat" color="primary" (clicked)="runDangerConfirm()">Confirm danger</ajax-button>
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Copy action" subtitle="[ajaxCopyAction]">
+      <ajax-button variant="stroked" [ajaxCopyAction]="'Sample clipboard value'">Copy value</ajax-button>
+    </ajax-card>
+
+    <ajax-card title="Upload" subtitle="ajax-upload-dropzone · ajax-upload-queue">
+      <div class="stack">
+        <ajax-upload-dropzone
+          [multiple]="true"
+          accept=".txt,.json,image/*"
+          [maxFileSize]="1024 * 1024"
+          (filesSelected)="onFilesSelected($event)"
+        />
+        <ajax-upload-queue
+          [items]="uploadItems()"
+          (cancel)="cancelUpload($event)"
+          (retry)="retryUpload($event)"
+        />
+      </div>
+    </ajax-card>
+
+    <ajax-card title="Progress action" subtitle="ajax-progress-action">
+      <ajax-progress-action title="Importing records" [steps]="importSteps()" />
+    </ajax-card>
+
+    <ajax-card title="Empty &amp; skeleton" subtitle="ajax-empty-state · ajax-skeleton-*">
+      <div class="stack">
+        <ajax-empty-state
+          icon="inventory_2"
+          title="No records found"
+          description="Create your first record to get started."
+          actionLabel="Create record"
+          secondaryActionLabel="Clear filters"
+          (action)="feedback.info('Create record')"
+          (secondaryAction)="feedback.info('Filters cleared')"
+        />
+        <ajax-skeleton-card />
+        <ajax-skeleton-list [count]="3" />
+      </div>
+    </ajax-card>
+  </section>
+</section>

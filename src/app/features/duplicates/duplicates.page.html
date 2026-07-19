@@ -1,0 +1,44 @@
+<section class="dupes">
+  <header>
+    <p class="eyebrow">Resolve board</p>
+    <h2>Duplicate files</h2>
+  </header>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (groups().length === 0) {
+    <ajax-empty-state
+      icon="verified"
+      title="No duplicates"
+      description="Hash clusters are clear. Nice work."
+    />
+  } @else {
+    <div class="boards">
+      @for (group of groups(); track group.id) {
+        <article class="group">
+          <header class="group__head">
+            <strong>Hash {{ group.hash }}</strong>
+            <ajax-button variant="stroked" (clicked)="keepBoth(group.id)">Keep both</ajax-button>
+          </header>
+          <div class="group__files">
+            @for (file of group.files; track file.id) {
+              <div class="file">
+                <div>
+                  <strong>{{ file.name }}</strong>
+                  <p>{{ file.path }} · {{ file.sizeLabel }} · {{ file.system }}</p>
+                </div>
+                <ajax-button
+                  variant="flat"
+                  color="primary"
+                  (clicked)="keep(group.id, file.id, file.name)"
+                >
+                  Keep this
+                </ajax-button>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,71 @@
+<ajax-drawer
+  class="shell"
+  [(opened)]="drawerOpen"
+  [mode]="drawerMode()"
+  [fixedInViewport]="true"
+>
+  <div drawer class="shell__nav">
+    <a routerLink="/" class="shell__brand" (click)="onNavClick()">
+      <ajax-icon name="sports_esports" />
+      <div>
+        <strong>Game Library</strong>
+        <span>Collection Manager</span>
+      </div>
+    </a>
+
+    <nav class="shell__links" aria-label="Primary">
+      @for (item of navItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: item.exact === true }"
+          class="shell__link"
+          (click)="onNavClick()"
+        >
+          <ajax-icon [name]="item.icon" />
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <nav class="shell__footer-nav" aria-label="Developer">
+      @for (item of footerItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="is-active"
+          class="shell__link shell__link--muted"
+          (click)="onNavClick()"
+        >
+          <ajax-icon [name]="item.icon" />
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </div>
+
+  <div class="shell__main">
+    <ajax-toolbar color="primary" class="shell__toolbar">
+      @if (isHandset()) {
+        <ajax-button
+          variant="icon"
+          icon="menu"
+          ariaLabel="Open navigation"
+          (clicked)="toggleDrawer()"
+        />
+      }
+      <h1 class="shell__title">{{ pageTitle() }}</h1>
+      <span class="shell__spacer"></span>
+      <span class="shell__user">
+        {{ displayName() }}
+        @if (roleLabel()) {
+          <small>· {{ roleLabel() }}</small>
+        }
+      </span>
+      <ajax-button variant="basic" icon="logout" (clicked)="signOut()">Sign out</ajax-button>
+    </ajax-toolbar>
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</ajax-drawer>

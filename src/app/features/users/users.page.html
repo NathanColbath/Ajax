@@ -1,0 +1,78 @@
+<section class="users">
+  <header class="users__head">
+    <div>
+      <p class="eyebrow">People directory</p>
+      <h2>Users &amp; roles</h2>
+      <p class="users__note">
+        Login authorization uses Auth0 Roles. Assign <code>super_admin</code>, <code>admin</code>, or
+        <code>standard</code> in the Auth0 Dashboard. Invite / enable below is a local preview until a
+        backend syncs the Management API.
+      </p>
+    </div>
+    <div class="users__actions">
+      <ajax-button variant="icon" icon="grid_view" ariaLabel="Cards" (clicked)="view.set('cards')" />
+      <ajax-button variant="icon" icon="table_rows" ariaLabel="Table" (clicked)="view.set('table')" />
+      <ajax-button variant="flat" color="primary" icon="person_add" (clicked)="showInvite.set(true)">
+        Invite user
+      </ajax-button>
+    </div>
+  </header>
+
+  @if (showInvite()) {
+    <div class="invite">
+      <ajax-input label="Name" [(ngModel)]="inviteName" name="name" />
+      <ajax-input label="Email" [(ngModel)]="inviteEmail" name="email" type="email" />
+      <ajax-select label="Role" [(ngModel)]="inviteRole" name="role">
+        <ajax-select-option value="standard" label="Standard" />
+        <ajax-select-option value="admin" label="Administrator" />
+        <ajax-select-option value="super_admin" label="Super Admin" />
+      </ajax-select>
+      <div class="invite__actions">
+        <ajax-button variant="stroked" (clicked)="showInvite.set(false)">Cancel</ajax-button>
+        <ajax-button variant="flat" color="primary" (clicked)="invite()">Send invite</ajax-button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (users().length === 0) {
+    <ajax-empty-state icon="group" title="No users" description="Invite someone to get started." />
+  } @else if (view() === 'cards') {
+    <div class="directory">
+      @for (user of pagedUsers(); track user.id) {
+        <article class="person">
+          <div class="avatar">{{ user.initials }}</div>
+          <div class="person__body">
+            <strong>{{ user.name }}</strong>
+            <span>{{ user.email }}</span>
+            <div class="person__chips">
+              <ajax-status-chip [label]="user.role.replace('_', ' ')" [status]="roleTone(user.role)" />
+              <ajax-status-chip
+                [label]="user.enabled ? 'Active' : 'Disabled'"
+                [status]="user.enabled ? 'success' : 'warning'"
+              />
+            </div>
+          </div>
+          <ajax-slide-toggle [ngModel]="user.enabled" (ngModelChange)="toggle(user, $event)">
+            Enabled
+          </ajax-slide-toggle>
+        </article>
+      }
+    </div>
+    <ajax-pagination
+      [length]="users().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  } @else {
+    <ajax-table [columns]="columns" [data]="pagedUsers()" />
+    <ajax-pagination
+      [length]="users().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  }
+</section>

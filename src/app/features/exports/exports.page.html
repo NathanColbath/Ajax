@@ -1,0 +1,86 @@
+<section class="exports">
+  <header>
+    <p class="eyebrow">Export builder</p>
+    <h2>Exports &amp; backups</h2>
+  </header>
+
+  <div class="builder">
+    <div class="formats">
+      <button
+        type="button"
+        class="format"
+        [class.is-active]="format() === 'json'"
+        (click)="setFormat('json')"
+      >
+        <strong>JSON</strong>
+        <span>Full structured catalog dump</span>
+      </button>
+      <button
+        type="button"
+        class="format"
+        [class.is-active]="format() === 'csv'"
+        (click)="setFormat('csv')"
+      >
+        <strong>CSV</strong>
+        <span>Spreadsheet-friendly rows</span>
+      </button>
+    </div>
+
+    <div class="scopes">
+      <ajax-button
+        [variant]="hasScope('games') ? 'flat' : 'stroked'"
+        color="primary"
+        (clicked)="toggleScope('games')"
+      >
+        Games
+      </ajax-button>
+      <ajax-button
+        [variant]="hasScope('physical') ? 'flat' : 'stroked'"
+        color="primary"
+        (clicked)="toggleScope('physical')"
+      >
+        Physical
+      </ajax-button>
+      <ajax-button
+        [variant]="hasScope('systems') ? 'flat' : 'stroked'"
+        color="primary"
+        (clicked)="toggleScope('systems')"
+      >
+        Systems
+      </ajax-button>
+    </div>
+
+    <ajax-action-button
+      label="Run export"
+      loadingLabel="Exporting"
+      successLabel="Exported"
+      icon="ios_share"
+      [state]="runState()"
+      (action)="run()"
+    />
+  </div>
+
+  <section class="jobs">
+    <h3>Recent jobs</h3>
+    @if (loading()) {
+      <div class="page-loading"><ajax-spinner /></div>
+    } @else if (jobs().length === 0) {
+      <ajax-empty-state icon="ios_share" title="No exports yet" description="Run your first export above." />
+    } @else {
+      <ol class="timeline">
+        @for (job of jobs(); track job.id) {
+          <li>
+            <ajax-status-chip
+              [label]="job.status"
+              [status]="job.status === 'complete' ? 'success' : job.status === 'failed' ? 'danger' : 'info'"
+            />
+            <div>
+              <strong>{{ job.format | uppercase }} · {{ job.scopes.join(', ') }}</strong>
+              <span>{{ job.createdLabel }}</span>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</section>

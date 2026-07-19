@@ -1,0 +1,22 @@
+<section class="settings">
+  <header>
+    <p class="eyebrow">Personal</p>
+    <h2>Settings</h2>
+    <p class="lede">Preferences for your account. System options live under Config.</p>
+  </header>
+
+  <ajax-accordion>
+    <ajax-expansion title="Notifications" description="How we reach you" [expanded]="true">
+      <ajax-slide-toggle [(ngModel)]="emailDigest" name="emailDigest">
+        Weekly collection digest
+      </ajax-slide-toggle>
+    </ajax-expansion>
+
+    <ajax-expansion title="Interface" description="Personal layout">
+      <ajax-slide-toggle [(ngModel)]="compactNav" name="compactNav">
+        Prefer compact navigation labels
+      </ajax-slide-toggle>
+      <p class="muted">Theme follows the shared Material cyan/orange light palette for now.</p>
+    </ajax-expansion>
+  </ajax-accordion>
+</section>

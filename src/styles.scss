@@ -1,0 +1,113 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  // theme-type: light avoids light-dark() so colors work on older Safari (e.g. macOS Monterey).
+  @include mat.theme((
+    color: (
+      primary: mat.$cyan-palette,
+      tertiary: mat.$orange-palette,
+      theme-type: light,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // Soft mid-radius: between square (0) and M3 pills (9999px).
+  @include mat.theme-overrides((
+    corner-extra-small: 4px,
+    corner-small: 6px,
+    corner-medium: 8px,
+    corner-large: 12px,
+    corner-extra-large: 16px,
+    corner-full: 8px,
+  ));
+
+  @include mat.button-overrides((
+    filled-container-shape: 8px,
+    outlined-container-shape: 8px,
+    protected-container-shape: 8px,
+    text-container-shape: 8px,
+    tonal-container-shape: 8px,
+    filled-horizontal-padding: 20px,
+    outlined-horizontal-padding: 20px,
+    protected-horizontal-padding: 20px,
+    tonal-horizontal-padding: 20px,
+    text-with-icon-horizontal-padding: 16px,
+  ));
+
+  @include mat.icon-button-overrides((
+    container-shape: 10px,
+  ));
+
+  @include mat.form-field-overrides((
+    outlined-container-shape: 6px,
+    filled-container-shape: 6px,
+  ));
+
+  @include mat.card-overrides((
+    elevated-container-shape: 10px,
+    outlined-container-shape: 10px,
+    filled-container-shape: 10px,
+  ));
+
+  @include mat.expansion-overrides((
+    container-shape: 10px,
+  ));
+
+  @include mat.chips-overrides((
+    container-shape-radius: 8px,
+  ));
+
+  @include mat.dialog-overrides((
+    container-shape: 12px,
+  ));
+
+  @include mat.menu-overrides((
+    container-shape: 12px,
+  ));
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+  font-family: var(--mat-sys-body-medium-font), 'Helvetica Neue', sans-serif;
+  font-size: var(--mat-sys-body-medium-size);
+  font-weight: var(--mat-sys-body-medium-weight);
+  line-height: var(--mat-sys-body-medium-line-height);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
+}
+
+.ajax-toast {
+  --mdc-snackbar-container-color: var(--mat-sys-inverse-surface);
+  --mdc-snackbar-supporting-text-color: var(--mat-sys-inverse-on-surface);
+}
+
+.ajax-toast--success {
+  --mdc-snackbar-container-color: #1b5e4a;
+  --mdc-snackbar-supporting-text-color: #e8fff6;
+}
+
+.ajax-toast--error {
+  --mdc-snackbar-container-color: #7f1d1d;
+  --mdc-snackbar-supporting-text-color: #ffe8e8;
+}
+
+.ajax-toast--info {
+  --mdc-snackbar-container-color: #0f3d5c;
+  --mdc-snackbar-supporting-text-color: #e7f5ff;
+}
+
+.ajax-toast--warn {
+  --mdc-snackbar-container-color: #7a4b00;
+  --mdc-snackbar-supporting-text-color: #fff4e0;
+}
+
+@import './app/shared/interactions/themes/interactions.scss';

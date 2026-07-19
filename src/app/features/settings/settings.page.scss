@@ -1,0 +1,30 @@
+.settings {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0 0 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.lede {
+  margin: 0.35rem 0 0;
+  opacity: 0.75;
+  max-width: 48ch;
+}
+
+.muted {
+  margin: 0.85rem 0 0;
+  opacity: 0.75;
+  font-size: 0.9rem;
+}

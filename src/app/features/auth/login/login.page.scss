@@ -1,0 +1,59 @@
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--mat-sys-primary) 18%, transparent), transparent 45%),
+    radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--mat-sys-tertiary) 16%, transparent), transparent 50%),
+    var(--mat-sys-surface);
+}
+
+.login__panel {
+  width: min(420px, 100%);
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 92%, white);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+  box-shadow: 0 18px 50px rgba(20, 40, 60, 0.08);
+}
+
+.login__brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.35rem;
+
+  strong {
+    display: block;
+  }
+
+  span {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+}
+
+h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.65rem;
+}
+
+.lede {
+  margin: 0 0 1.25rem;
+  opacity: 0.75;
+  line-height: 1.45;
+}
+
+.login__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.login__error {
+  margin: 0 0 1rem;
+  color: var(--ajax-color-danger, #b3261e);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,137 @@
+.page-loading {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+}
+
+.dash {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.dash__intro {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+.lede {
+  margin: 0.35rem 0 0;
+  opacity: 0.75;
+  max-width: 48ch;
+}
+
+.stat--personal {
+  border-color: color-mix(in srgb, var(--mat-sys-primary) 35%, transparent);
+}
+
+.empty-inline {
+  opacity: 0.7;
+  margin: 0.5rem 0;
+}
+
+.dash__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.1rem 1rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 88%, white);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+
+  strong {
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+  }
+
+  span {
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+}
+
+.attention {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.attention__item {
+  text-decoration: none;
+}
+
+.recent__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+.recent__row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(140px, 180px);
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+}
+
+.cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 180px;
+  padding: 0.9rem;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #f7fbff;
+  background:
+    linear-gradient(180deg, transparent 20%, rgba(0, 0, 0, 0.72)),
+    var(--accent, #2a6f7a);
+  transition: transform 140ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.cover__title {
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.cover__meta {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 0.2rem;
+}
+
+a {
+  color: inherit;
+}

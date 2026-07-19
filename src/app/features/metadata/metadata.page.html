@@ -1,0 +1,46 @@
+<section class="meta">
+  <header>
+    <p class="eyebrow">Match console</p>
+    <h2>Metadata imports</h2>
+  </header>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else {
+    <div class="providers">
+      @for (provider of providers(); track provider.id) {
+        <ajax-card [title]="provider.name" [subtitle]="provider.description">
+          <div class="provider__row">
+            <ajax-status-chip
+              [label]="provider.status"
+              [status]="provider.status === 'success' ? 'success' : provider.status === 'warning' ? 'warning' : 'info'"
+            />
+            <span class="muted">Last run · {{ provider.lastRunLabel }}</span>
+            <span class="spacer"></span>
+            <ajax-button variant="stroked" icon="play_arrow" (clicked)="run(provider.id)">Run</ajax-button>
+          </div>
+        </ajax-card>
+      }
+    </div>
+
+    <section class="queue">
+      <h3>Review queue</h3>
+      @if (queue().length === 0) {
+        <ajax-empty-state icon="auto_awesome" title="Queue clear" description="No unmatched titles right now." />
+      } @else {
+        @for (item of queue(); track item.id) {
+          <article class="queue__item">
+            <div>
+              <strong>{{ item.suggestedTitle }}</strong>
+              <p>{{ item.fileName }} · {{ item.system }} · {{ (item.confidence * 100) | number: '1.0-0' }}% confidence</p>
+            </div>
+            <div class="queue__actions">
+              <ajax-button variant="flat" color="primary" (clicked)="accept(item.id)">Accept</ajax-button>
+              <ajax-button variant="stroked" (clicked)="skip(item.id)">Skip</ajax-button>
+            </div>
+          </article>
+        }
+      }
+    </section>
+  }
+</section>

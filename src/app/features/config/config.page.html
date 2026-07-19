@@ -1,0 +1,76 @@
+<section class="config">
+  <header>
+    <p class="eyebrow">System</p>
+    <h2>Config</h2>
+    <p class="lede">Application-wide options. Storage metrics are visible to Super Admins only.</p>
+  </header>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else {
+    <ajax-accordion>
+      <ajax-expansion title="Library" description="Shared catalog options" [expanded]="true">
+        <div class="stack">
+          <ajax-input label="Library display name" [(ngModel)]="libraryName" name="libraryName" />
+          <ajax-slide-toggle [(ngModel)]="allowUploads" name="allowUploads">
+            Allow standard users to upload into review queue
+          </ajax-slide-toggle>
+          <button type="button" class="linkish" (click)="saveConfig()">Save library options</button>
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Data source" description="Mock vs live API" [expanded]="true">
+        <div class="setting-row">
+          <div>
+            <strong>Mock data mode</strong>
+            <p>Domain APIs return fixtures when enabled. Turn off to call the ASP.NET backend.</p>
+          </div>
+          <ajax-slide-toggle
+            [ngModel]="mockEnabled"
+            (ngModelChange)="onMockChange($event)"
+            name="mockMode"
+          >
+            Use mock data
+          </ajax-slide-toggle>
+        </div>
+        <p class="hint">Current mode: <strong>{{ mockEnabled ? 'mock' : 'live' }}</strong></p>
+      </ajax-expansion>
+
+      @if (isSuperAdmin) {
+        <ajax-expansion title="Storage &amp; disk" description="Super Admin only" [expanded]="true">
+          @if (storageError()) {
+            <p class="error">{{ storageError() }}</p>
+          } @else if (storage(); as metrics) {
+            <div class="storage-summary">
+              <ajax-panel title="Overall usage">
+                <p>
+                  <strong>{{ metrics.usedGb }} / {{ metrics.totalGb }} GB</strong>
+                  used · {{ metrics.freeGb }} GB free
+                </p>
+                <div class="bar">
+                  <span [style.width.%]="(metrics.usedGb / metrics.totalGb) * 100"></span>
+                </div>
+              </ajax-panel>
+              <div class="paths">
+                @for (path of metrics.paths; track path.path) {
+                  <article class="path">
+                    <div class="path__head">
+                      <code>{{ path.path }}</code>
+                      <ajax-status-chip
+                        [label]="path.health"
+                        [status]="path.health === 'ok' ? 'success' : path.health === 'warning' ? 'warning' : 'danger'"
+                      />
+                    </div>
+                    <p>{{ path.usedGb }} / {{ path.totalGb }} GB</p>
+                  </article>
+                }
+              </div>
+            </div>
+          } @else {
+            <ajax-spinner />
+          }
+        </ajax-expansion>
+      }
+    </ajax-accordion>
+  }
+</section>

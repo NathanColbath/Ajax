@@ -1,0 +1,109 @@
+@if (loading()) {
+  <div class="page-loading"><ajax-spinner /></div>
+} @else if (game(); as g) {
+  <section class="detail">
+    <a routerLink="/games" class="back">
+      <ajax-button variant="basic" icon="arrow_back">Back to library</ajax-button>
+    </a>
+
+    <div class="hero" [style.--accent]="g.accent">
+      <div class="hero__art">
+        <ajax-icon name="sports_esports" />
+      </div>
+      <div class="hero__body">
+        <p class="eyebrow">{{ g.system }} · {{ g.region }} · Shared library</p>
+        <h2>{{ g.title }}</h2>
+        <div class="hero__stats">
+          <span class="rating" [attr.aria-label]="g.rating + ' out of 5'">
+            <strong>{{ stars(g.rating) }}</strong>
+            {{ g.rating | number: '1.1-1' }} / 5
+            <small>({{ g.ratingCount | number }} reviews)</small>
+          </span>
+          <span>{{ g.downloadCount | number }} downloads</span>
+          <span>Released {{ g.releaseDate | date: 'mediumDate' }}</span>
+        </div>
+        <p class="hero__desc">{{ g.description }}</p>
+        <div class="hero__chips">
+          @for (genre of g.genres; track genre) {
+            <ajax-status-chip [label]="genre" status="info" />
+          }
+          <ajax-status-chip [label]="g.playStatus" status="neutral" />
+        </div>
+        <div class="hero__actions">
+          <ajax-button
+            variant="flat"
+            color="primary"
+            icon="download"
+            (clicked)="download(g.files[0]?.name ?? g.title)"
+          >
+            Download
+          </ajax-button>
+          <ajax-button
+            variant="stroked"
+            [icon]="g.favorite ? 'star' : 'star_border'"
+            (clicked)="toggleFavorite()"
+          >
+            {{ g.favorite ? 'Favorited' : 'Favorite' }}
+          </ajax-button>
+        </div>
+      </div>
+    </div>
+
+    <ajax-tabs>
+      <ajax-tab label="Overview">
+        <p class="overview-copy">{{ g.description }}</p>
+        <div class="meta-grid">
+          <ajax-card title="Publisher">{{ g.publisher }}</ajax-card>
+          <ajax-card title="Developer">{{ g.developer }}</ajax-card>
+          <ajax-card title="Players">{{ g.players }}</ajax-card>
+          <ajax-card title="Catalog">{{ g.owned ? 'In library' : 'Wishlist / missing dump' }}</ajax-card>
+        </div>
+      </ajax-tab>
+      <ajax-tab label="Media">
+        <div class="shots">
+          @for (shot of g.screenshots; track shot) {
+            <div class="shot" [style.background]="shot"></div>
+          } @empty {
+            <ajax-empty-state icon="image" title="No media" description="Screenshots will appear here." />
+          }
+        </div>
+      </ajax-tab>
+      <ajax-tab label="Files">
+        <div class="files">
+          @for (file of g.files; track file.id) {
+            <article class="file">
+              <div>
+                <strong>{{ file.name }}</strong>
+                <span>{{ file.sizeLabel }} · {{ file.extension }}</span>
+              </div>
+              <ajax-button variant="stroked" icon="download" (clicked)="download(file.name)">
+                Download
+              </ajax-button>
+            </article>
+          } @empty {
+            <ajax-empty-state icon="folder_off" title="No files" description="Upload a dump to attach files." />
+          }
+        </div>
+      </ajax-tab>
+      <ajax-tab label="Metadata">
+        <dl class="meta-list">
+          <div><dt>Release date</dt><dd>{{ g.releaseDate | date: 'longDate' }}</dd></div>
+          <div><dt>Year</dt><dd>{{ g.year }}</dd></div>
+          <div><dt>Region</dt><dd>{{ g.region }}</dd></div>
+          <div><dt>Languages</dt><dd>{{ g.languages.join(', ') }}</dd></div>
+          <div><dt>Genres</dt><dd>{{ g.genres.join(', ') }}</dd></div>
+          <div><dt>Tags</dt><dd>{{ g.tags.join(', ') || '—' }}</dd></div>
+          <div><dt>Rating</dt><dd>{{ g.rating | number: '1.1-1' }} / 5 ({{ g.ratingCount }})</dd></div>
+          <div><dt>Downloads</dt><dd>{{ g.downloadCount | number }}</dd></div>
+        </dl>
+      </ajax-tab>
+      <ajax-tab label="Notes">
+        <ajax-card title="Your notes">
+          <p>{{ g.notes || 'No notes yet.' }}</p>
+        </ajax-card>
+      </ajax-tab>
+    </ajax-tabs>
+  </section>
+} @else {
+  <ajax-empty-state icon="error" title="Game not found" description="This title is not in the shared catalog." />
+}

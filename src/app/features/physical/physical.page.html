@@ -1,0 +1,107 @@
+<section class="physical">
+  <header class="physical__head">
+    <div>
+      <p class="eyebrow">Shelf inventory</p>
+      <h2>Physical collection</h2>
+    </div>
+    <div class="physical__actions">
+      <ajax-button
+        variant="icon"
+        icon="grid_view"
+        ariaLabel="Card view"
+        (clicked)="view.set('cards')"
+      />
+      <ajax-button
+        variant="icon"
+        icon="table_rows"
+        ariaLabel="Table view"
+        (clicked)="view.set('table')"
+      />
+      <ajax-button variant="stroked" icon="add_location_alt" (clicked)="showCreate.set(true)">
+        Add location
+      </ajax-button>
+    </div>
+  </header>
+
+  @if (showCreate()) {
+    <div class="create-loc">
+      <ajax-input label="Location name" [(ngModel)]="newLocationName" name="locName" placeholder="Shelf B3" />
+      <ajax-select label="Type" [(ngModel)]="newLocationType" name="locType">
+        <ajax-select-option value="shelf" label="Shelf" />
+        <ajax-select-option value="bin" label="Bin" />
+        <ajax-select-option value="cabinet" label="Cabinet" />
+        <ajax-select-option value="room" label="Room" />
+      </ajax-select>
+      <ajax-input label="Notes" [(ngModel)]="newLocationNotes" name="locNotes" placeholder="Optional" />
+      <div class="create-loc__actions">
+        <ajax-button variant="stroked" (clicked)="showCreate.set(false)">Cancel</ajax-button>
+        <ajax-button variant="flat" color="primary" (clicked)="createLocation()">Create</ajax-button>
+      </div>
+    </div>
+  }
+
+  <div class="filters">
+    <ajax-button
+      [variant]="!locationId() ? 'flat' : 'stroked'"
+      color="primary"
+      (clicked)="filterLocation(undefined)"
+    >
+      All locations
+    </ajax-button>
+    @for (loc of locations(); track loc.id) {
+      <ajax-button
+        [variant]="locationId() === loc.id ? 'flat' : 'stroked'"
+        color="primary"
+        (clicked)="filterLocation(loc.id)"
+      >
+        {{ loc.name }}
+      </ajax-button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (items().length === 0) {
+    <ajax-empty-state icon="inventory_2" title="No items here" description="Try another shelf or bin." />
+  } @else if (view() === 'cards') {
+    <div class="shelf">
+      @for (item of pagedItems(); track item.id) {
+        <article class="item" [style.--accent]="item.accent">
+          <div class="item__art"></div>
+          <div class="item__body">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.system }} · {{ item.locationName }}</p>
+            <div class="item__chips">
+              <ajax-status-chip [label]="item.condition" status="neutral" />
+              <ajax-status-chip [label]="item.completeness" status="info" />
+              @if (item.checkedOut) {
+                <ajax-status-chip [label]="'Out · ' + (item.borrower || 'Guest')" status="warning" />
+              }
+            </div>
+          </div>
+          <ajax-button
+            [variant]="item.checkedOut ? 'stroked' : 'flat'"
+            color="primary"
+            (clicked)="toggleCheckout(item)"
+          >
+            {{ item.checkedOut ? 'Check in' : 'Check out' }}
+          </ajax-button>
+        </article>
+      }
+    </div>
+    <ajax-pagination
+      [length]="items().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  } @else {
+    <ajax-table [columns]="columns" [data]="pagedItems()" />
+    <ajax-pagination
+      [length]="items().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  }
+</section>

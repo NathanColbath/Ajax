@@ -1,0 +1,96 @@
+<section class="games">
+  <header class="games__toolbar">
+    <div class="games__filters">
+      <p class="eyebrow">Shared digital library</p>
+      <ajax-input
+        label="Search library"
+        placeholder="Title or system"
+        [ngModel]="search()"
+        (ngModelChange)="onSearch($event)"
+        name="search"
+      />
+      <div class="games__facets">
+        <ajax-button
+          [variant]="ownedOnly() ? 'flat' : 'stroked'"
+          color="primary"
+          (clicked)="toggleOwned()"
+        >
+          Owned only
+        </ajax-button>
+        @for (system of systems(); track system) {
+          <ajax-button
+            [variant]="selectedSystem() === system ? 'flat' : 'stroked'"
+            color="primary"
+            (clicked)="toggleSystem(system)"
+          >
+            {{ system }}
+          </ajax-button>
+        }
+      </div>
+    </div>
+    <div class="games__actions">
+      <ajax-button variant="icon" icon="grid_view" ariaLabel="Grid view" (clicked)="setView('grid')" />
+      <ajax-button variant="icon" icon="view_list" ariaLabel="List view" (clicked)="setView('list')" />
+      <ajax-button variant="icon" icon="table_rows" ariaLabel="Table view" (clicked)="setView('table')" />
+      <a routerLink="/uploads">
+        <ajax-button variant="flat" color="primary" icon="upload_file">Import</ajax-button>
+      </a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (games().length === 0) {
+    <ajax-empty-state
+      icon="sports_esports"
+      title="No games match"
+      description="Try clearing filters or importing files."
+      actionLabel="Clear filters"
+      (action)="clearFilters()"
+    />
+  } @else if (view() === 'grid') {
+    <div class="cover-grid">
+      @for (game of pagedGames(); track game.id) {
+        <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+          @if (!game.hasArt) {
+            <span class="tile__badge">No art</span>
+          }
+          <span class="tile__title">{{ game.title }}</span>
+          <span class="tile__meta">{{ game.system }} · {{ game.rating | number: '1.1-1' }}★ · {{ game.year }}</span>
+        </a>
+      }
+    </div>
+    <ajax-pagination
+      [length]="games().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  } @else if (view() === 'list') {
+    <div class="list">
+      @for (game of pagedGames(); track game.id) {
+        <a class="list__row" [routerLink]="['/games', game.id]">
+          <span class="swatch" [style.background]="game.accent"></span>
+          <div>
+            <strong>{{ game.title }}</strong>
+            <span>{{ game.system }} · {{ game.region }} · {{ game.year }} · {{ game.rating | number: '1.1-1' }}/5</span>
+          </div>
+        </a>
+      }
+    </div>
+    <ajax-pagination
+      [length]="games().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  } @else {
+    <ajax-table [columns]="columns" [data]="pagedGames()" />
+    <ajax-pagination
+      [length]="games().length"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPage($event)"
+    />
+  }
+</section>

@@ -1,0 +1,27 @@
+<section class="login">
+  <div class="login__panel">
+    <div class="login__brand">
+      <ajax-icon name="sports_esports" />
+      <div>
+        <strong>Game Library</strong>
+        <span>ROM Collection Manager</span>
+      </div>
+    </div>
+
+    <h1>Sign in</h1>
+    <p class="lede">Secure access via Auth0 Universal Login.</p>
+
+    @if (auth.error$ | async; as error) {
+      <p class="login__error" role="alert">{{ error.message }}</p>
+    }
+
+    <div class="login__actions">
+      <ajax-button variant="flat" color="primary" icon="login" (clicked)="login()">
+        Log in
+      </ajax-button>
+      <ajax-button variant="stroked" icon="person_add" (clicked)="signUp()">
+        Sign up
+      </ajax-button>
+    </div>
+  </div>
+</section>
