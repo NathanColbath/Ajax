@@ -2,6 +2,10 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
 
+## Deploy
+
+Production CI/CD (private GHCR + VPS + version branches): see [`docs/deploy.md`](docs/deploy.md).
+
 ## Development server
 
 To start a local development server, run:

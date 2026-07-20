@@ -8,5 +8,7 @@ export {
 export type { AjaxApiMode, ProvideApiOptions } from './api-mode';
 export { ApiModeService } from './api-mode.service';
 export { ApiClient } from './api-client';
-export type { ApiParams } from './api-client';
+export type { ApiParams, UploadProgressEvent } from './api-client';
 export { mockDelay } from './mock-delay';
+export { saveBlobAsFile } from './download';
+export { apiErrorMessage } from './api-error';

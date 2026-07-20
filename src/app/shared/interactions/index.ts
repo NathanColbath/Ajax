@@ -34,6 +34,7 @@ export { AjaxCopyAction } from './feedback/copy-action';
 export { AjaxProgressAction } from './progress/progress-action';
 export { AjaxUploadDropzone } from './progress/upload-dropzone';
 export { AjaxUploadQueue } from './progress/upload-queue';
+export type { AjaxUploadQueueMode } from './progress/upload-queue';
 
 export { AjaxEmptyState } from './content/empty-state';
 export { AjaxSkeleton } from './content/skeleton';

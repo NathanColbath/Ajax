@@ -1,0 +1,35 @@
+# Production stack: pull pre-built images from GHCR (no local build).
+# Usage:
+#   IMAGE_TAG=1.2.0 docker compose -f docker-compose.prod.yml pull
+#   IMAGE_TAG=1.2.0 docker compose -f docker-compose.prod.yml up -d
+#
+# Optional: GHCR_IMAGE_PREFIX (default nathancolbath/ajax)
+
+services:
+  api:
+    image: ghcr.io/${GHCR_IMAGE_PREFIX:-nathancolbath/ajax}/api:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Data Source=/data/gamelibrary.db
+      Storage__RootPath: /data/files
+      Cors__Origins__0: ${PUBLIC_ORIGIN:-http://localhost}
+      Auth0__Domain: ${AUTH0_DOMAIN:-dev-82ln3zs1yykao3qo.us.auth0.com}
+      Auth0__Audience: ${AUTH0_AUDIENCE:-https://game-library-api}
+      Hasheous__ApiKey: ${HASHEOUS_API_KEY:-}
+      Igdb__ClientId: ${IGDB_CLIENT_ID:-}
+      Igdb__ClientSecret: ${IGDB_CLIENT_SECRET:-}
+      DeepSeek__ApiKey: ${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ./data:/data
+
+  web:
+    image: ghcr.io/${GHCR_IMAGE_PREFIX:-nathancolbath/ajax}/web:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    depends_on:
+      - api

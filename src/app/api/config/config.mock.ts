@@ -1,8 +1,7 @@
-import { StorageMetrics, SystemConfig } from './config.models';
+import { DEFAULT_SYSTEM_CONFIG, StorageMetrics, SystemConfig } from './config.models';
 
 export const MOCK_SYSTEM_CONFIG: SystemConfig = {
-  libraryName: 'Game Library',
-  allowStandardUploads: false,
+  ...DEFAULT_SYSTEM_CONFIG,
   apiModeNote: 'Switch mock/live below for frontend development.',
 };
 

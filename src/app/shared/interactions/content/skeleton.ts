@@ -11,7 +11,7 @@ import { Component, input } from '@angular/core';
       background: linear-gradient(
         90deg,
         var(--mat-sys-surface-container) 25%,
-        var(--mat-sys-surface-container-highest) 37%,
+        var(--mat-sys-surface-container-high) 37%,
         var(--mat-sys-surface-container) 63%
       );
       background-size: 400% 100%;

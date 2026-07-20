@@ -3,7 +3,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideAuth0 } from '@auth0/auth0-angular';
 
-import { provideApi } from './core/api';
+import { provideApi, readStoredApiMode } from './core/api';
 import {
   AUTH0_APP_ORIGIN,
   AUTH0_AUDIENCE,
@@ -32,7 +32,7 @@ export const appConfig: ApplicationConfig = {
       useRefreshTokensFallback: false,
       cacheLocation: 'localstorage',
     }),
-    ...provideApi({ mode: 'mock', baseUrl: '/api' }),
+    ...provideApi({ baseUrl: '/api', mode: readStoredApiMode() ?? 'live' }),
     ...provideAjaxInteractions(),
   ],
 };

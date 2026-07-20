@@ -17,5 +17,5 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   `,
 })
 export class AjaxToolbar {
-  readonly color = input<'primary' | 'accent' | 'warn' | undefined>('primary');
+  readonly color = input<'primary' | 'accent' | 'warn' | undefined>(undefined);
 }

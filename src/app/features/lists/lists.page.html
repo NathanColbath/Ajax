@@ -1,0 +1,59 @@
+<section class="lists">
+  <header class="lists__head">
+    <div class="lists__header">
+      <h2>My lists</h2>
+      <p class="lists__lede">Personal playlists you can download as a ZIP of library files.</p>
+    </div>
+    <ajax-button
+      variant="flat"
+      color="primary"
+      icon="playlist_add"
+      [disabled]="busy()"
+      (clicked)="openCreate()"
+    >
+      New list
+    </ajax-button>
+  </header>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (lists().length === 0) {
+    <ajax-empty-state
+      icon="playlist_play"
+      title="No lists yet"
+      description="Create a list, then add games from your library."
+      actionLabel="New list"
+      (action)="openCreate()"
+    />
+  } @else {
+    <div class="lists-table-wrap">
+      <table class="lists-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Games</th>
+            <th>Updated</th>
+            <th class="lists-table__actions-col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (list of lists(); track list.id) {
+            <tr class="lists-table__row" (click)="openList(list)">
+              <td class="lists-table__name">{{ list.name }}</td>
+              <td>{{ list.gameCount }}</td>
+              <td>{{ list.updatedAt | date: 'mediumDate' }}</td>
+              <td class="lists-table__actions-col" (click)="$event.stopPropagation()">
+                <ajax-button
+                  variant="icon"
+                  icon="delete"
+                  ariaLabel="Delete list"
+                  (clicked)="deleteList(list, $event)"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

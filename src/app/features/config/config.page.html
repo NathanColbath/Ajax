@@ -1,8 +1,7 @@
 <section class="config">
   <header>
-    <p class="eyebrow">System</p>
     <h2>Config</h2>
-    <p class="lede">Application-wide options. Storage metrics are visible to Super Admins only.</p>
+    <p class="lede">Application-wide options. Secrets stay in appsettings / environment variables.</p>
   </header>
 
   @if (loading()) {
@@ -11,12 +10,170 @@
     <ajax-accordion>
       <ajax-expansion title="Library" description="Shared catalog options" [expanded]="true">
         <div class="stack">
-          <ajax-input label="Library display name" [(ngModel)]="libraryName" name="libraryName" />
-          <ajax-slide-toggle [(ngModel)]="allowUploads" name="allowUploads">
-            Allow standard users to upload into review queue
+          <ajax-input label="Library display name" [(ngModel)]="form.libraryName" name="libraryName" />
+          <ajax-input label="Admin note" [(ngModel)]="form.apiModeNote" name="apiModeNote" />
+          <ajax-slide-toggle [(ngModel)]="form.allowStandardUploads" name="allowUploads">
+            Allow standard users to upload
           </ajax-slide-toggle>
-          <button type="button" class="linkish" (click)="saveConfig()">Save library options</button>
+          <ajax-slide-toggle [(ngModel)]="form.allowStandardExports" name="allowExports">
+            Allow standard users to export
+          </ajax-slide-toggle>
         </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Uploads" description="Size limits, accept list, concurrency" [expanded]="true">
+        <div class="stack">
+          <ajax-input
+            label="Max upload bytes"
+            type="number"
+            [(ngModel)]="form.maxUploadBytes"
+            name="maxUploadBytes"
+          />
+          <ajax-input
+            label="Default accept extensions"
+            [(ngModel)]="form.defaultUploadAccept"
+            name="defaultUploadAccept"
+          />
+          <ajax-input
+            label="Upload poll interval (ms)"
+            type="number"
+            [(ngModel)]="form.uploadPollIntervalMs"
+            name="uploadPollIntervalMs"
+          />
+          <ajax-input
+            label="Max parallel upload jobs (1–8)"
+            type="number"
+            [(ngModel)]="form.maxParallelUploadJobs"
+            name="maxParallelUploadJobs"
+          />
+          <ajax-slide-toggle [(ngModel)]="form.autoMatchAfterUpload" name="autoMatch">
+            Auto-match metadata after upload
+          </ajax-slide-toggle>
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Jobs" description="Background processing &amp; run windows" [expanded]="false">
+        <div class="stack">
+          <ajax-slide-toggle [(ngModel)]="form.backgroundJobsEnabled" name="bgJobs">
+            Background jobs enabled
+          </ajax-slide-toggle>
+          <ajax-slide-toggle [(ngModel)]="form.jobScheduleEnabled" name="jobSchedule">
+            Enforce run window
+          </ajax-slide-toggle>
+          <div class="row2">
+            <ajax-input label="Window start (HH:mm)" [(ngModel)]="form.jobAllowedStartLocal" name="jobStart" />
+            <ajax-input label="Window end (HH:mm)" [(ngModel)]="form.jobAllowedEndLocal" name="jobEnd" />
+          </div>
+          <ajax-input label="Timezone id" [(ngModel)]="form.jobTimeZoneId" name="jobTz" />
+          <ajax-input
+            label="Max job runtime (minutes)"
+            type="number"
+            [(ngModel)]="form.maxJobRuntimeMinutes"
+            name="maxRuntime"
+          />
+          <ajax-slide-toggle [(ngModel)]="form.uploadJobsRespectSchedule" name="uploadSched">
+            Uploads respect schedule
+          </ajax-slide-toggle>
+          <ajax-slide-toggle [(ngModel)]="form.metadataJobsRespectSchedule" name="metaSched">
+            Metadata respects schedule
+          </ajax-slide-toggle>
+          <ajax-slide-toggle [(ngModel)]="form.enrichmentJobsRespectSchedule" name="enrichSched">
+            Enrichment respects schedule
+          </ajax-slide-toggle>
+          <ajax-slide-toggle [(ngModel)]="form.exportJobsRespectSchedule" name="exportSched">
+            Exports respect schedule
+          </ajax-slide-toggle>
+          <ajax-input
+            label="Scheduled metadata cron (or HH:mm)"
+            [(ngModel)]="form.scheduledMetadataCron"
+            name="metaCron"
+          />
+          <ajax-input
+            label="Scheduled enrichment cron (or HH:mm)"
+            [(ngModel)]="form.scheduledEnrichmentCron"
+            name="enrichCron"
+          />
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Metadata" description="Batch sizes &amp; enrichment limits" [expanded]="false">
+        <div class="stack">
+          <div class="row2">
+            <ajax-input label="Hasheous batch size" type="number" [(ngModel)]="form.hasheousBatchSize" name="hashBatch" />
+            <ajax-input label="Enrichment batch size" type="number" [(ngModel)]="form.enrichmentBatchSize" name="enrichBatch" />
+          </div>
+          <div class="row2">
+            <ajax-input label="Candidate pool" type="number" [(ngModel)]="form.enrichmentCandidatePool" name="pool" />
+            <ajax-input label="DeepSeek temperature" type="number" [(ngModel)]="form.deepSeekTemperature" name="temp" />
+          </div>
+          <div class="row2">
+            <ajax-input label="Max screenshots / game" type="number" [(ngModel)]="form.maxScreenshotsPerGame" name="maxShots" />
+            <ajax-input label="Max curated reviews" type="number" [(ngModel)]="form.maxCuratedReviewsPerGame" name="maxReviews" />
+          </div>
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Catalog &amp; UI defaults" description="Dashboard and library UX" [expanded]="false">
+        <div class="stack">
+          <div class="row2">
+            <ajax-input label="Dashboard favorites limit" type="number" [(ngModel)]="form.dashboardFavoritesLimit" name="favLim" />
+            <ajax-input label="Dashboard recent limit" type="number" [(ngModel)]="form.dashboardRecentLimit" name="recLim" />
+          </div>
+          <div class="row2">
+            <ajax-input label="Library page size" type="number" [(ngModel)]="form.defaultLibraryPageSize" name="pageSize" />
+            <ajax-input label="Search debounce (ms)" type="number" [(ngModel)]="form.searchDebounceMs" name="debounce" />
+          </div>
+          <div class="row2">
+            <ajax-input label="Reviews page size" type="number" [(ngModel)]="form.gameReviewsPageSize" name="revPage" />
+            <ajax-input label="Default rating scale" type="number" [(ngModel)]="form.defaultRatingScale" name="ratingScale" />
+          </div>
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Logs" description="List and purge defaults" [expanded]="false">
+        <div class="stack">
+          <div class="row2">
+            <ajax-input label="Default list limit" type="number" [(ngModel)]="form.logListDefaultLimit" name="logLimit" />
+            <ajax-input label="Purge older than (days)" type="number" [(ngModel)]="form.logPurgeDefaultDays" name="purgeDays" />
+          </div>
+          <ajax-input
+            label="Auto-refresh interval (ms)"
+            type="number"
+            [(ngModel)]="form.logAutoRefreshIntervalMs"
+            name="logRefresh"
+          />
+        </div>
+      </ajax-expansion>
+
+      <ajax-expansion title="Integrations" description="Deploy-time secrets status (read-only)" [expanded]="true">
+        @if (integrations(); as integ) {
+          <div class="integrations">
+            <div class="integrations__row">
+              <span>Hasheous</span>
+              <ajax-status-chip
+                [label]="integ.hasheousConfigured ? 'configured' : 'missing'"
+                [status]="integ.hasheousConfigured ? 'success' : 'warning'"
+              />
+            </div>
+            <div class="integrations__row">
+              <span>IGDB</span>
+              <ajax-status-chip
+                [label]="integ.igdbConfigured ? 'configured' : 'missing'"
+                [status]="integ.igdbConfigured ? 'success' : 'warning'"
+              />
+            </div>
+            <div class="integrations__row">
+              <span>DeepSeek</span>
+              <ajax-status-chip
+                [label]="integ.deepSeekConfigured ? 'configured' : 'missing'"
+                [status]="integ.deepSeekConfigured ? 'success' : 'warning'"
+              />
+            </div>
+          </div>
+          <p class="hint">Set keys via environment variables (see api/README). Values are never shown here.</p>
+        } @else {
+          <p class="hint">Unable to load integration status.</p>
+        }
       </ajax-expansion>
 
       <ajax-expansion title="Data source" description="Mock vs live API" [expanded]="true">
@@ -44,11 +201,19 @@
             <div class="storage-summary">
               <ajax-panel title="Overall usage">
                 <p>
-                  <strong>{{ metrics.usedGb }} / {{ metrics.totalGb }} GB</strong>
-                  used · {{ metrics.freeGb }} GB free
+                  <strong>{{ metrics.usedGb | number: '1.0-3' }} GB</strong>
+                  of library files on a
+                  <strong>{{ metrics.totalGb | number: '1.0-1' }} GB</strong>
+                  volume · {{ metrics.freeGb | number: '1.0-1' }} GB free
                 </p>
-                <div class="bar">
-                  <span [style.width.%]="(metrics.usedGb / metrics.totalGb) * 100"></span>
+                <div class="bar" [attr.title]="'Volume ' + (((metrics.totalGb - metrics.freeGb) / metrics.totalGb) * 100 | number: '1.0-0') + '% full'">
+                  <span
+                    [style.width.%]="
+                      metrics.totalGb > 0
+                        ? ((metrics.totalGb - metrics.freeGb) / metrics.totalGb) * 100
+                        : 0
+                    "
+                  ></span>
                 </div>
               </ajax-panel>
               <div class="paths">
@@ -61,7 +226,7 @@
                         [status]="path.health === 'ok' ? 'success' : path.health === 'warning' ? 'warning' : 'danger'"
                       />
                     </div>
-                    <p>{{ path.usedGb }} / {{ path.totalGb }} GB</p>
+                    <p>{{ path.usedGb | number: '1.0-3' }} GB used</p>
                   </article>
                 }
               </div>
@@ -70,7 +235,37 @@
             <ajax-spinner />
           }
         </ajax-expansion>
+
+        <ajax-expansion title="Danger zone" description="Factory wipe — Super Admin only" [expanded]="false">
+          <div class="danger">
+            <p class="danger__lede">
+              Wipe clears all SQLite catalog data and empties the files storage folder. Auth0 and
+              appsettings secrets are not touched.
+            </p>
+            <ajax-input
+              label="Type WIPE to confirm"
+              [ngModel]="wipeConfirmText()"
+              (ngModelChange)="wipeConfirmText.set($event)"
+              name="wipeConfirm"
+            />
+            <ajax-button
+              variant="flat"
+              color="warn"
+              icon="delete_forever"
+              [disabled]="!canWipe()"
+              (clicked)="wipeLibrary()"
+            >
+              {{ wiping() ? 'Wiping…' : 'Wipe library & files' }}
+            </ajax-button>
+          </div>
+        </ajax-expansion>
       }
     </ajax-accordion>
+
+    <div class="config__save">
+      <ajax-button variant="flat" color="primary" icon="save" [disabled]="saving()" (clicked)="saveConfig()">
+        {{ saving() ? 'Saving…' : 'Save all settings' }}
+      </ajax-button>
+    </div>
   }
 </section>

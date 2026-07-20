@@ -6,11 +6,14 @@ html {
   // theme-type: light avoids light-dark() so colors work on older Safari (e.g. macOS Monterey).
   @include mat.theme((
     color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
+      primary: mat.$azure-palette,
+      tertiary: mat.$azure-palette,
       theme-type: light,
     ),
-    typography: Roboto,
+    typography: (
+      plain-family: ('IBM Plex Sans', sans-serif),
+      brand-family: ('IBM Plex Sans', sans-serif),
+    ),
     density: 0,
   ));
 
@@ -78,7 +81,7 @@ body {
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   margin: 0;
-  font-family: var(--mat-sys-body-medium-font), 'Helvetica Neue', sans-serif;
+  font-family: var(--mat-sys-body-medium-font), 'IBM Plex Sans', sans-serif;
   font-size: var(--mat-sys-body-medium-size);
   font-weight: var(--mat-sys-body-medium-weight);
   line-height: var(--mat-sys-body-medium-line-height);
@@ -101,8 +104,8 @@ body {
 }
 
 .ajax-toast--info {
-  --mdc-snackbar-container-color: #0f3d5c;
-  --mdc-snackbar-supporting-text-color: #e7f5ff;
+  --mdc-snackbar-container-color: #1a2a36;
+  --mdc-snackbar-supporting-text-color: #e8eef2;
 }
 
 .ajax-toast--warn {

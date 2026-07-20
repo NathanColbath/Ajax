@@ -21,6 +21,7 @@ export interface DashboardRecentGame {
   title: string;
   system: string;
   accent: string;
+  hasArt: boolean;
 }
 
 export interface DashboardSnapshot {

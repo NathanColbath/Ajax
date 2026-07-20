@@ -2,9 +2,15 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { LibraryUser, UsersApi, UserRole } from '../../api';
+import { apiErrorMessage } from '../../core/api';
 import { initialsFromName } from '../../core/auth/auth-roles';
 import { SessionService } from '../../core/auth/session.service';
-import { AjaxEmptyState, AjaxFeedbackService, AjaxStatusChip } from '../../shared/interactions';
+import {
+  AjaxConfirmationService,
+  AjaxEmptyState,
+  AjaxFeedbackService,
+  AjaxStatusChip,
+} from '../../shared/interactions';
 import {
   AjaxButton,
   AjaxInput,
@@ -39,6 +45,7 @@ import {
 export class UsersPage {
   private readonly api = inject(UsersApi);
   private readonly feedback = inject(AjaxFeedbackService);
+  private readonly confirmation = inject(AjaxConfirmationService);
   private readonly session = inject(SessionService);
 
   readonly loading = signal(true);
@@ -127,6 +134,34 @@ export class UsersPage {
       this.inviteEmail = '';
       this.inviteRole = 'standard';
       this.feedback.success(`${user.name} invited (local preview)`);
+    });
+  }
+
+  canDelete(user: LibraryUser): boolean {
+    return user.id !== this.session.userId()
+      && user.email.toLowerCase() !== (this.session.session()?.email ?? '').toLowerCase();
+  }
+
+  async deleteUser(user: LibraryUser): Promise<void> {
+    if (!this.canDelete(user)) {
+      this.feedback.warning('You cannot delete your own account');
+      return;
+    }
+    const ok = await this.confirmation.confirm({
+      title: 'Delete user?',
+      message: `Permanently delete “${user.name}” (${user.email}).`,
+      confirmLabel: 'Delete',
+      severity: 'danger',
+    });
+    if (!ok) {
+      return;
+    }
+    this.api.delete(user.id).subscribe({
+      next: () => {
+        this.users.update((list) => list.filter((u) => u.id !== user.id));
+        this.feedback.success(`Deleted ${user.name}`);
+      },
+      error: (err) => this.feedback.error(apiErrorMessage(err, 'Failed to delete user')),
     });
   }
 

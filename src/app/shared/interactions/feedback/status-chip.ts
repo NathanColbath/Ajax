@@ -21,23 +21,27 @@ import { AjaxStatusTone } from '../models/action-state';
     }
 
     .tone-success {
-      --mdc-chip-elevated-container-color: color-mix(in srgb, var(--ajax-color-success) 18%, white);
+      --mdc-chip-elevated-container-color: var(--mat-sys-surface-container-high);
       color: var(--ajax-color-success);
+      border: 1px solid color-mix(in srgb, var(--ajax-color-success) 35%, transparent);
     }
 
     .tone-warning {
-      --mdc-chip-elevated-container-color: color-mix(in srgb, var(--ajax-color-warning) 18%, white);
+      --mdc-chip-elevated-container-color: var(--mat-sys-surface-container-high);
       color: var(--ajax-color-warning);
+      border: 1px solid color-mix(in srgb, var(--ajax-color-warning) 35%, transparent);
     }
 
     .tone-danger {
-      --mdc-chip-elevated-container-color: color-mix(in srgb, var(--ajax-color-danger) 18%, white);
+      --mdc-chip-elevated-container-color: var(--mat-sys-surface-container-high);
       color: var(--ajax-color-danger);
+      border: 1px solid color-mix(in srgb, var(--ajax-color-danger) 35%, transparent);
     }
 
     .tone-info {
-      --mdc-chip-elevated-container-color: color-mix(in srgb, var(--ajax-color-info) 18%, white);
+      --mdc-chip-elevated-container-color: var(--mat-sys-surface-container-high);
       color: var(--ajax-color-info);
+      border: 1px solid color-mix(in srgb, var(--ajax-color-info) 35%, transparent);
     }
 
     mat-icon {

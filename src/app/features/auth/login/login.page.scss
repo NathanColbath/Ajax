@@ -3,19 +3,15 @@
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background:
-    radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--mat-sys-primary) 18%, transparent), transparent 45%),
-    radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--mat-sys-tertiary) 16%, transparent), transparent 50%),
-    var(--mat-sys-surface);
+  background: var(--mat-sys-surface);
 }
 
 .login__panel {
   width: min(420px, 100%);
   padding: 1.75rem 1.5rem 1.5rem;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--mat-sys-surface-container) 92%, white);
-  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
-  box-shadow: 0 18px 50px rgba(20, 40, 60, 0.08);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
 }
 
 .login__brand {
@@ -33,6 +29,14 @@
     font-size: 0.8rem;
     opacity: 0.7;
   }
+}
+
+.login__logo {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 h1 {

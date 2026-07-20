@@ -1,0 +1,88 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver to deploy (e.g. 1.2.0 or v1.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            RAW="${{ inputs.version }}"
+          else
+            RAW="${{ github.event.release.tag_name }}"
+          fi
+          RAW="${RAW#v}"
+          if [[ ! "$RAW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version: $RAW (expected X.Y.Z)"
+            exit 1
+          fi
+          echo "version=$RAW" >> "$GITHUB_OUTPUT"
+          echo "Deploying version $RAW"
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ vars.VPS_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ vars.VPS_APP_DIR }}"
+            if [[ -z "$APP_DIR" ]]; then
+              echo "VPS_APP_DIR variable is required"
+              exit 1
+            fi
+            cd "$APP_DIR"
+            export IMAGE_TAG="${{ steps.version.outputs.version }}"
+            export GHCR_IMAGE_PREFIX="${{ vars.GHCR_IMAGE_PREFIX || 'nathancolbath/ajax' }}"
+            if [[ -x ./scripts/deploy-vps.sh ]]; then
+              ./scripts/deploy-vps.sh "$IMAGE_TAG"
+            else
+              docker compose -f docker-compose.prod.yml pull
+              docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            fi
+
+      - name: Health check
+        shell: bash
+        env:
+          PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
+        run: |
+          if [[ -z "${PUBLIC_ORIGIN:-}" ]]; then
+            echo "PUBLIC_ORIGIN not set — skipping health check"
+            exit 0
+          fi
+          ORIGIN="${PUBLIC_ORIGIN%/}"
+          echo "Checking $ORIGIN/ ..."
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "$ORIGIN/" || true)"
+            if [[ "$code" =~ ^[23] ]]; then
+              echo "Health check OK (HTTP $code)"
+              exit 0
+            fi
+            echo "Attempt $i/30 got HTTP ${code:-none}, waiting..."
+            sleep 5
+          done
+          echo "::error::Health check failed for $ORIGIN"
+          exit 1

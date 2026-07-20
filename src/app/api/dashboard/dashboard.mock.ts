@@ -19,15 +19,15 @@ export const MOCK_DASHBOARDS: Record<string, DashboardSnapshot> = {
       { id: 'meta', label: 'Unmatched metadata', count: 9, tone: 'info', link: '/metadata' },
     ],
     recent: [
-      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a' },
-      { id: 'g8', title: 'Chrono Trigger', system: 'SNES', accent: '#4a6a2a' },
-      { id: 'g3', title: 'Castlevania: SOTN', system: 'PS1', accent: '#5a2a6f' },
+      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a', hasArt: true },
+      { id: 'g8', title: 'Chrono Trigger', system: 'SNES', accent: '#4a6a2a', hasArt: true },
+      { id: 'g3', title: 'Castlevania: SOTN', system: 'PS1', accent: '#52687a', hasArt: true },
     ],
     favorites: [
-      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a' },
-      { id: 'g3', title: 'Castlevania: SOTN', system: 'PS1', accent: '#5a2a6f' },
-      { id: 'g8', title: 'Chrono Trigger', system: 'SNES', accent: '#4a6a2a' },
-      { id: 'g6', title: 'Final Fantasy VII', system: 'PS1', accent: '#3a4a8a' },
+      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a', hasArt: true },
+      { id: 'g3', title: 'Castlevania: SOTN', system: 'PS1', accent: '#52687a', hasArt: true },
+      { id: 'g8', title: 'Chrono Trigger', system: 'SNES', accent: '#4a6a2a', hasArt: true },
+      { id: 'g6', title: 'Final Fantasy VII', system: 'PS1', accent: '#3a4a8a', hasArt: true },
     ],
   },
   u2: {
@@ -46,12 +46,12 @@ export const MOCK_DASHBOARDS: Record<string, DashboardSnapshot> = {
       { id: 'loan', label: 'Items you have checked out', count: 1, tone: 'info', link: '/physical' },
     ],
     recent: [
-      { id: 'g5', title: 'Streets of Rage 2', system: 'Genesis', accent: '#8a3a2a' },
-      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a' },
+      { id: 'g5', title: 'Streets of Rage 2', system: 'Genesis', accent: '#8a3a2a', hasArt: true },
+      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a', hasArt: true },
     ],
     favorites: [
-      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a' },
-      { id: 'g5', title: 'Streets of Rage 2', system: 'Genesis', accent: '#8a3a2a' },
+      { id: 'g1', title: 'Super Metroid', system: 'SNES', accent: '#2a6f7a', hasArt: true },
+      { id: 'g5', title: 'Streets of Rage 2', system: 'Genesis', accent: '#8a3a2a', hasArt: true },
     ],
   },
   u3: {
@@ -67,7 +67,7 @@ export const MOCK_DASHBOARDS: Record<string, DashboardSnapshot> = {
       storageTotalGb: 1024,
     },
     attention: [],
-    recent: [{ id: 'g7', title: 'Kirby’s Adventure', system: 'NES', accent: '#8a4a7a' }],
-    favorites: [{ id: 'g7', title: 'Kirby’s Adventure', system: 'NES', accent: '#8a4a7a' }],
+    recent: [{ id: 'g7', title: 'Kirby’s Adventure', system: 'NES', accent: '#8a4a7a', hasArt: false }],
+    favorites: [{ id: 'g7', title: 'Kirby’s Adventure', system: 'NES', accent: '#8a4a7a', hasArt: false }],
   },
 };

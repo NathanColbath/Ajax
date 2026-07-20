@@ -1,9 +1,11 @@
 import { UpperCasePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ExportFormat, ExportJob, ExportScope, ExportsApi } from '../../api';
+import { apiErrorMessage } from '../../core/api';
 import {
   AjaxActionButton,
   AjaxActionState,
+  AjaxConfirmationService,
   AjaxEmptyState,
   AjaxFeedbackService,
   AjaxStatusChip,
@@ -20,6 +22,7 @@ import { AjaxButton, AjaxSpinner } from '../../shared/ui';
 export class ExportsPage {
   private readonly api = inject(ExportsApi);
   private readonly feedback = inject(AjaxFeedbackService);
+  private readonly confirmation = inject(AjaxConfirmationService);
 
   readonly loading = signal(true);
   readonly jobs = signal<ExportJob[]>([]);
@@ -73,6 +76,33 @@ export class ExportsPage {
         this.runState.set('error');
         window.setTimeout(() => this.runState.set('idle'), 1500);
       },
+    });
+  }
+
+  download(job: ExportJob): void {
+    const fileName = job.fileName ?? `library-export.${job.format}`;
+    this.api.download(job.id, fileName).subscribe({
+      next: () => this.feedback.success(`Downloaded ${fileName}`),
+      error: () => this.feedback.warning('Download failed — export may still be running'),
+    });
+  }
+
+  async deleteJob(job: ExportJob): Promise<void> {
+    const ok = await this.confirmation.confirm({
+      title: 'Delete export?',
+      message: `Remove this ${job.format.toUpperCase()} export job and its file.`,
+      confirmLabel: 'Delete',
+      severity: 'danger',
+    });
+    if (!ok) {
+      return;
+    }
+    this.api.delete(job.id).subscribe({
+      next: () => {
+        this.jobs.update((list) => list.filter((j) => j.id !== job.id));
+        this.feedback.success('Export deleted');
+      },
+      error: (err) => this.feedback.error(apiErrorMessage(err, 'Failed to delete export')),
     });
   }
 }

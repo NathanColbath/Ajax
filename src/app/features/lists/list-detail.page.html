@@ -1,0 +1,105 @@
+<section class="list-detail">
+  <a class="back" routerLink="/lists">← My lists</a>
+
+  @if (loading()) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (list(); as detail) {
+    <header class="list-detail__toolbar">
+      <div class="list-detail__title">
+        @if (renaming()) {
+          <ajax-input
+            label="List name"
+            [ngModel]="renameValue()"
+            (ngModelChange)="renameValue.set($event)"
+            name="rename"
+            (keyup.enter)="saveRename()"
+          />
+          <div class="list-detail__rename-actions">
+            <ajax-button variant="stroked" (clicked)="cancelRename()">Cancel</ajax-button>
+            <ajax-button variant="flat" color="primary" (clicked)="saveRename()">Save</ajax-button>
+          </div>
+        } @else {
+          <h2>{{ detail.name }}</h2>
+          <p class="list-detail__lede">
+            {{ detail.games.length }} game{{ detail.games.length === 1 ? '' : 's' }}
+          </p>
+        }
+      </div>
+      <div class="list-detail__actions">
+        @if (!renaming()) {
+          <ajax-button variant="stroked" icon="edit" (clicked)="startRename()">Rename</ajax-button>
+        }
+        <ajax-button variant="stroked" icon="add" (clicked)="openAddGame()">Add game</ajax-button>
+        <ajax-button
+          variant="flat"
+          color="primary"
+          icon="download"
+          [disabled]="downloading() || detail.games.length === 0"
+          (clicked)="downloadAll()"
+        >
+          Download all
+        </ajax-button>
+        <ajax-button variant="icon" icon="delete" ariaLabel="Delete list" (clicked)="deleteList()" />
+      </div>
+    </header>
+
+    @if (detail.games.length > 0) {
+      <ajax-input
+        label="Filter this list"
+        placeholder="Title or system"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        name="listFilter"
+      />
+    }
+
+    @if (detail.games.length === 0) {
+      <ajax-empty-state
+        icon="playlist_add"
+        title="Add games to this list"
+        description="Search your library and pick games to include."
+        actionLabel="Add game"
+        (action)="openAddGame()"
+      />
+    } @else if (filteredGames().length === 0) {
+      <ajax-empty-state
+        icon="search_off"
+        title="No matches"
+        description="Try a different filter."
+        actionLabel="Clear filter"
+        (action)="search.set('')"
+      />
+    } @else {
+      <div class="cover-grid">
+        @for (game of filteredGames(); track game.id) {
+          <div class="tile-wrap">
+            <a
+              class="tile"
+              [routerLink]="['/games', game.id]"
+              [style.--accent]="accentFor(game)"
+            >
+              <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+                @if (coverFor(game); as cover) {
+                  <img class="tile__cover" [src]="cover" [alt]="game.title + ' cover'" />
+                } @else if (!game.hasArt) {
+                  <span class="tile__badge">No art</span>
+                }
+              </div>
+              <div class="tile__body">
+                <span class="tile__title">{{ game.title }}</span>
+                <span class="tile__meta">{{ game.system }}</span>
+              </div>
+            </a>
+            <ajax-button
+              class="tile__remove"
+              variant="icon"
+              icon="close"
+              ariaLabel="Remove from list"
+              (clicked)="removeGame(game, $event)"
+            />
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

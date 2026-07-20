@@ -1,7 +1,6 @@
 <section class="users">
   <header class="users__head">
     <div>
-      <p class="eyebrow">People directory</p>
       <h2>Users &amp; roles</h2>
       <p class="users__note">
         Login authorization uses Auth0 Roles. Assign <code>super_admin</code>, <code>admin</code>, or
@@ -57,6 +56,9 @@
           <ajax-slide-toggle [ngModel]="user.enabled" (ngModelChange)="toggle(user, $event)">
             Enabled
           </ajax-slide-toggle>
+          @if (canDelete(user)) {
+            <ajax-button variant="basic" icon="delete" (clicked)="deleteUser(user)">Delete</ajax-button>
+          }
         </article>
       }
     </div>

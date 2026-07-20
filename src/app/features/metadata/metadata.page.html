@@ -1,45 +1,170 @@
 <section class="meta">
-  <header>
-    <p class="eyebrow">Match console</p>
+  <header class="meta__header">
     <h2>Metadata imports</h2>
+    <p class="meta__lede">Enrich catalog titles from hash matches or edit metadata locally.</p>
   </header>
 
   @if (loading()) {
     <div class="page-loading"><ajax-spinner /></div>
   } @else {
-    <div class="providers">
+    <section class="providers" aria-label="Providers">
       @for (provider of providers(); track provider.id) {
-        <ajax-card [title]="provider.name" [subtitle]="provider.description">
-          <div class="provider__row">
-            <ajax-status-chip
-              [label]="provider.status"
-              [status]="provider.status === 'success' ? 'success' : provider.status === 'warning' ? 'warning' : 'info'"
-            />
-            <span class="muted">Last run · {{ provider.lastRunLabel }}</span>
-            <span class="spacer"></span>
-            <ajax-button variant="stroked" icon="play_arrow" (clicked)="run(provider.id)">Run</ajax-button>
+        <article class="provider" [attr.data-status]="provider.status">
+          <div class="provider__main">
+            <div class="provider__title-row">
+              <h3 class="provider__name">{{ provider.name }}</h3>
+              <ajax-status-chip
+                [label]="provider.status"
+                [status]="statusTone(provider.status)"
+              />
+            </div>
+            <p class="provider__desc">{{ provider.description }}</p>
+            <p class="provider__run">Last run · {{ provider.lastRunLabel }}</p>
           </div>
-        </ajax-card>
+          @if (provider.id !== 'manual') {
+            <div class="provider__actions">
+              <ajax-button
+                variant="flat"
+                color="primary"
+                icon="play_arrow"
+                [disabled]="provider.status === 'running'"
+                (clicked)="run(provider.id)"
+              >
+                {{ provider.status === 'running' ? 'Running…' : 'Run' }}
+              </ajax-button>
+            </div>
+          }
+        </article>
       }
-    </div>
+    </section>
 
-    <section class="queue">
-      <h3>Review queue</h3>
-      @if (queue().length === 0) {
-        <ajax-empty-state icon="auto_awesome" title="Queue clear" description="No unmatched titles right now." />
-      } @else {
-        @for (item of queue(); track item.id) {
-          <article class="queue__item">
-            <div>
-              <strong>{{ item.suggestedTitle }}</strong>
-              <p>{{ item.fileName }} · {{ item.system }} · {{ (item.confidence * 100) | number: '1.0-0' }}% confidence</p>
+    @if (enrichment(); as enrich) {
+      <section class="enrichment" aria-label="Public enrichment">
+        <article class="provider" [attr.data-status]="enrich.status">
+          <div class="provider__main">
+            <div class="provider__title-row">
+              <h3 class="provider__name">Public enrichment (DeepSeek)</h3>
+              <ajax-status-chip
+                [label]="enrich.status"
+                [status]="statusTone(enrich.status)"
+              />
             </div>
-            <div class="queue__actions">
-              <ajax-button variant="flat" color="primary" (clicked)="accept(item.id)">Accept</ajax-button>
-              <ajax-button variant="stroked" (clicked)="skip(item.id)">Skip</ajax-button>
-            </div>
-          </article>
+            <p class="provider__desc">
+              AI-curated reviews, public ratings, and screenshot URLs for catalog titles. Requires
+              DeepSeek:ApiKey. Separate from Hasheous match.
+            </p>
+            <p class="provider__run">Last run · {{ enrich.lastRunLabel }}</p>
+          </div>
+          <div class="provider__actions">
+            <ajax-button
+              variant="flat"
+              color="primary"
+              icon="auto_awesome"
+              [disabled]="enrich.status === 'running'"
+              (clicked)="runEnrichment()"
+            >
+              {{ enrich.status === 'running' ? 'Running…' : 'Run enrichment' }}
+            </ajax-button>
+          </div>
+        </article>
+      </section>
+    }
+
+    <section class="queue" [class.queue--busy]="queueBusy()">
+      <header class="queue__header">
+        <div class="queue__heading">
+          <h3>Review queue</h3>
+          @if (queue().length > 0) {
+            <span class="queue__count">{{ queue().length }} pending</span>
+          }
+        </div>
+        @if (queue().length > 0 || acceptingAll()) {
+          <ajax-button
+            variant="flat"
+            color="primary"
+            icon="done_all"
+            [disabled]="queueBusy() || queue().length === 0"
+            (clicked)="acceptAll()"
+          >
+            {{ acceptingAll() ? 'Accepting…' : 'Accept all' }}
+          </ajax-button>
         }
+      </header>
+
+      @if (acceptProgress(); as progress) {
+        <div class="queue__progress" role="status" aria-live="polite">
+          <div class="queue__progress-head">
+            <span>Accepting matches…</span>
+            <span>{{ progress.done }} of {{ progress.total }} · {{ acceptPercent() }}%</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="acceptPercent()" />
+        </div>
+      }
+
+      @if (queue().length === 0 && !acceptingAll()) {
+        <ajax-empty-state
+          icon="label"
+          title="Queue clear"
+          description="No unmatched titles right now."
+        />
+      } @else if (queue().length > 0) {
+        <div class="queue__list">
+          @for (item of pagedQueue(); track item.id) {
+            <article
+              class="queue__item"
+              [class.queue__item--acting]="actingId() === item.id"
+              [attr.aria-busy]="actingId() === item.id"
+            >
+              @if (item.suggestedCoverUrl) {
+                <img class="queue__thumb" [src]="item.suggestedCoverUrl" [alt]="item.suggestedTitle" />
+              } @else {
+                <div class="queue__thumb queue__thumb--empty" aria-hidden="true"></div>
+              }
+              <div class="queue__body">
+                <strong class="queue__title">{{ item.suggestedTitle }}</strong>
+                <p class="queue__meta">
+                  {{ item.fileName }}
+                  · {{ item.system }}
+                  · {{ (item.confidence * 100) | number: '1.0-0' }}% confidence
+                  @if (item.gameId) {
+                    · game {{ item.gameId }}
+                  }
+                </p>
+              </div>
+              <div class="queue__actions">
+                @if (actingId() === item.id) {
+                  <span class="queue__acting">
+                    <ajax-spinner [diameter]="22" [strokeWidth]="3" />
+                    {{ actingKind() === 'skip' ? 'Skipping…' : 'Applying…' }}
+                  </span>
+                } @else {
+                  <ajax-button
+                    variant="flat"
+                    color="primary"
+                    [disabled]="queueBusy()"
+                    (clicked)="accept(item.id)"
+                  >
+                    Accept
+                  </ajax-button>
+                  <ajax-button
+                    variant="stroked"
+                    [disabled]="queueBusy()"
+                    (clicked)="skip(item.id)"
+                  >
+                    Skip
+                  </ajax-button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+        <ajax-pagination
+          class="queue__pager"
+          [length]="queue().length"
+          [pageIndex]="pageIndex()"
+          [pageSize]="pageSize()"
+          (pageChange)="onPage($event)"
+        />
       }
     </section>
   }

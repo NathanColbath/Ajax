@@ -36,9 +36,9 @@ import { MatIconModule } from '@angular/material/icon';
       gap: 0.5rem;
       padding: 2rem 1.25rem;
       text-align: center;
-      border: 1px dashed var(--mat-sys-outline-variant);
+      border: 1px solid var(--mat-sys-outline-variant);
       border-radius: 10px;
-      background: var(--mat-sys-surface-container-lowest);
+      background: var(--mat-sys-surface-container);
     }
 
     .empty__icon {

@@ -4,14 +4,6 @@
   max-width: 760px;
 }
 
-.eyebrow {
-  margin: 0 0 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.72rem;
-  opacity: 0.65;
-}
-
 h2 {
   margin: 0;
   font-size: 1.6rem;
@@ -72,8 +64,8 @@ h2 {
 
 .bar {
   height: 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-highest);
   overflow: hidden;
   margin-top: 0.65rem;
 
@@ -92,8 +84,8 @@ h2 {
 .path {
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--mat-sys-surface-container) 90%, white);
-  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 40%, transparent);
+  background: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
 
   p {
     margin: 0.35rem 0 0;
@@ -111,4 +103,44 @@ h2 {
 
 .error {
   color: var(--ajax-color-danger, #b3261e);
+}
+
+.danger {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 36rem;
+}
+
+.danger__lede {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.row2 {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.integrations {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.integrations__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container);
+}
+
+.config__save {
+  display: flex;
+  justify-content: flex-end;
 }

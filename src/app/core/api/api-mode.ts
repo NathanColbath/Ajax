@@ -1,5 +1,6 @@
 import { EnvironmentProviders, InjectionToken, Provider } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from '../auth/auth.interceptor';
 
 export type AjaxApiMode = 'mock' | 'live';
 
@@ -18,7 +19,7 @@ export function provideApi(options: ProvideApiOptions = {}): Array<Provider | En
   const baseUrl = options.baseUrl ?? '/api';
 
   return [
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     { provide: AJAX_API_BASE_URL, useValue: baseUrl },
     { provide: AJAX_API_MODE_DEFAULT, useValue: mode },
   ];

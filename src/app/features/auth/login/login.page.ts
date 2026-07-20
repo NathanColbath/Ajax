@@ -2,12 +2,12 @@ import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { AjaxButton, AjaxIcon } from '../../../shared/ui';
+import { AjaxButton } from '../../../shared/ui';
 
 @Component({
   selector: 'ajax-login-page',
   standalone: true,
-  imports: [AsyncPipe, AjaxIcon, AjaxButton],
+  imports: [AsyncPipe, AjaxButton],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
 })

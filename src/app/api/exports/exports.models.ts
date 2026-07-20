@@ -5,6 +5,7 @@ export interface ExportJob {
   id: string;
   format: ExportFormat;
   scopes: ExportScope[];
-  status: 'queued' | 'running' | 'complete' | 'failed';
+  status: 'queued' | 'running' | 'complete' | 'failed' | 'error';
   createdLabel: string;
+  fileName?: string;
 }

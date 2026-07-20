@@ -1,11 +1,19 @@
-import { Component, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConfigApi, StorageMetrics, SystemConfig } from '../../api';
-import { AjaxApiMode, ApiModeService } from '../../core/api';
+import { ConfigApi, IntegrationsStatus, StorageMetrics, SystemConfig } from '../../api';
+import { DEFAULT_SYSTEM_CONFIG } from '../../api/config/config.models';
+import { apiErrorMessage, AjaxApiMode, ApiModeService } from '../../core/api';
+import { LibrarySettingsService } from '../../core/config/library-settings.service';
 import { SessionService } from '../../core/auth/session.service';
-import { AjaxFeedbackService, AjaxStatusChip } from '../../shared/interactions';
+import {
+  AjaxConfirmationService,
+  AjaxFeedbackService,
+  AjaxStatusChip,
+} from '../../shared/interactions';
 import {
   AjaxAccordion,
+  AjaxButton,
   AjaxExpansion,
   AjaxInput,
   AjaxPanel,
@@ -17,6 +25,7 @@ import {
   selector: 'ajax-config-page',
   standalone: true,
   imports: [
+    DecimalPipe,
     FormsModule,
     AjaxAccordion,
     AjaxExpansion,
@@ -25,6 +34,7 @@ import {
     AjaxSlideToggle,
     AjaxSpinner,
     AjaxStatusChip,
+    AjaxButton,
   ],
   templateUrl: './config.page.html',
   styleUrl: './config.page.scss',
@@ -33,32 +43,52 @@ export class ConfigPage {
   private readonly api = inject(ConfigApi);
   private readonly apiMode = inject(ApiModeService);
   private readonly session = inject(SessionService);
+  private readonly librarySettings = inject(LibrarySettingsService);
   private readonly feedback = inject(AjaxFeedbackService);
+  private readonly confirmation = inject(AjaxConfirmationService);
 
   readonly loading = signal(true);
+  readonly wiping = signal(false);
+  readonly saving = signal(false);
   readonly config = signal<SystemConfig | null>(null);
   readonly storage = signal<StorageMetrics | null>(null);
   readonly storageError = signal<string | null>(null);
+  readonly integrations = signal<IntegrationsStatus | null>(null);
   readonly isSuperAdmin = this.session.canSeeStorageMetrics();
+  readonly wipeConfirmText = signal('');
+
+  readonly canWipe = computed(
+    () => this.wipeConfirmText().trim().toUpperCase() === 'WIPE' && !this.wiping(),
+  );
 
   mockEnabled = this.apiMode.isMock();
-  libraryName = '';
-  allowUploads = false;
+  form: SystemConfig = { ...DEFAULT_SYSTEM_CONFIG };
 
   constructor() {
+    this.reload();
+  }
+
+  reload(): void {
+    this.loading.set(true);
     this.api.getSystemConfig().subscribe({
       next: (config) => {
-        this.config.set(config);
-        this.libraryName = config.libraryName;
-        this.allowUploads = config.allowStandardUploads;
+        this.applyConfig(config);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
 
+    this.api.getIntegrationsStatus().subscribe({
+      next: (status) => this.integrations.set(status),
+      error: () => this.integrations.set(null),
+    });
+
     if (this.isSuperAdmin) {
       this.api.getStorageMetrics().subscribe({
-        next: (metrics) => this.storage.set(metrics),
+        next: (metrics) => {
+          this.storage.set(metrics);
+          this.storageError.set(null);
+        },
         error: (err: Error) => this.storageError.set(err.message || 'Unable to load storage'),
       });
     }
@@ -72,14 +102,65 @@ export class ConfigPage {
   }
 
   saveConfig(): void {
-    this.api
-      .updateSystemConfig({
-        libraryName: this.libraryName.trim() || 'Game Library',
-        allowStandardUploads: this.allowUploads,
-      })
-      .subscribe((config) => {
-        this.config.set(config);
+    this.saving.set(true);
+    const patch: Partial<SystemConfig> = {
+      ...this.form,
+      libraryName: this.form.libraryName.trim() || 'Retrojax',
+      maxParallelUploadJobs: Math.min(8, Math.max(1, Number(this.form.maxParallelUploadJobs) || 1)),
+    };
+    this.api.updateSystemConfig(patch).subscribe({
+      next: (config) => {
+        this.applyConfig(config);
+        this.saving.set(false);
         this.feedback.success('Config saved');
-      });
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.feedback.error(apiErrorMessage(err, 'Failed to save config'));
+      },
+    });
+  }
+
+  async wipeLibrary(): Promise<void> {
+    if (!this.canWipe()) {
+      return;
+    }
+
+    const ok = await this.confirmation.confirm({
+      title: 'Wipe entire library?',
+      message:
+        'This deletes all catalog data and clears the files folder. Auth0 and API keys are not touched. This cannot be undone.',
+      confirmLabel: 'Wipe everything',
+      severity: 'danger',
+    });
+    if (!ok) {
+      return;
+    }
+
+    this.wiping.set(true);
+    this.api.wipe().subscribe({
+      next: (result) => {
+        this.applyConfig(result.config);
+        this.wipeConfirmText.set('');
+        this.wiping.set(false);
+        this.feedback.success(result.message || 'Library wiped');
+        if (this.isSuperAdmin) {
+          this.api.getStorageMetrics().subscribe({
+            next: (metrics) => this.storage.set(metrics),
+            error: () => undefined,
+          });
+        }
+      },
+      error: (err) => {
+        this.wiping.set(false);
+        this.feedback.error(apiErrorMessage(err, 'Wipe failed'));
+      },
+    });
+  }
+
+  private applyConfig(config: SystemConfig): void {
+    this.config.set(config);
+    this.form = { ...config };
+    this.librarySettings.apply(config);
   }
 }

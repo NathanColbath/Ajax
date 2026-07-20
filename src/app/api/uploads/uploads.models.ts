@@ -7,5 +7,12 @@ export interface UploadJob {
   progress: number;
   state: UploadJobState;
   systemId?: string;
+  gameId?: string;
   message?: string;
+}
+
+export interface UploadEnqueueOptions {
+  systemId: string;
+  gameId?: string;
+  createTitle?: string;
 }

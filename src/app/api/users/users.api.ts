@@ -49,4 +49,12 @@ export class UsersApi {
     }
     return this.http.post<LibraryUser>('/users', { name, email, role });
   }
+
+  delete(id: string): Observable<void> {
+    if (this.mode.isMock()) {
+      this.store = this.store.filter((u) => u.id !== id);
+      return mockDelay(undefined as void, 180);
+    }
+    return this.http.deleteVoid(`/users/${id}`);
+  }
 }

@@ -1,32 +1,7 @@
 <section class="games">
   <header class="games__toolbar">
-    <div class="games__filters">
-      <p class="eyebrow">Shared digital library</p>
-      <ajax-input
-        label="Search library"
-        placeholder="Title or system"
-        [ngModel]="search()"
-        (ngModelChange)="onSearch($event)"
-        name="search"
-      />
-      <div class="games__facets">
-        <ajax-button
-          [variant]="ownedOnly() ? 'flat' : 'stroked'"
-          color="primary"
-          (clicked)="toggleOwned()"
-        >
-          Owned only
-        </ajax-button>
-        @for (system of systems(); track system) {
-          <ajax-button
-            [variant]="selectedSystem() === system ? 'flat' : 'stroked'"
-            color="primary"
-            (clicked)="toggleSystem(system)"
-          >
-            {{ system }}
-          </ajax-button>
-        }
-      </div>
+    <div class="games__heading">
+      <h2>Shared digital library</h2>
     </div>
     <div class="games__actions">
       <ajax-button variant="icon" icon="grid_view" ariaLabel="Grid view" (clicked)="setView('grid')" />
@@ -37,6 +12,42 @@
       </a>
     </div>
   </header>
+
+  <div class="games__controls">
+    <ajax-input
+      class="games__search"
+      label="Search"
+      placeholder="Title or system"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+      name="search"
+    />
+    <div class="games__filter-bar">
+      <ajax-select
+        label="System"
+        [ngModel]="systemFilter()"
+        (ngModelChange)="onSystemFilter($event)"
+      >
+        <ajax-select-option value="" label="All systems" />
+        @for (system of systems(); track system) {
+          <ajax-select-option [value]="system" [label]="system" />
+        }
+      </ajax-select>
+      <ajax-select
+        label="Ownership"
+        [ngModel]="ownershipFilter()"
+        (ngModelChange)="onOwnershipFilter($event)"
+      >
+        <ajax-select-option value="" label="All games" />
+        <ajax-select-option value="owned" label="Owned only" />
+      </ajax-select>
+      @if (hasActiveFilters()) {
+        <ajax-button class="games__clear" variant="stroked" icon="filter_alt_off" (clicked)="clearFilters()">
+          Clear
+        </ajax-button>
+      }
+    </div>
+  </div>
 
   @if (loading()) {
     <div class="page-loading"><ajax-spinner /></div>
@@ -49,48 +60,67 @@
       (action)="clearFilters()"
     />
   } @else if (view() === 'grid') {
-    <div class="cover-grid">
-      @for (game of pagedGames(); track game.id) {
-        <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
-          @if (!game.hasArt) {
-            <span class="tile__badge">No art</span>
-          }
-          <span class="tile__title">{{ game.title }}</span>
-          <span class="tile__meta">{{ game.system }} · {{ game.rating | number: '1.1-1' }}★ · {{ game.year }}</span>
-        </a>
-      }
+    <div class="games__results">
+      <div class="cover-grid">
+        @for (game of pagedGames(); track game.id) {
+          <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+            <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+              @if (coverFor(game); as cover) {
+                <img class="tile__cover" [src]="cover" [alt]="game.title + ' cover'" />
+              } @else if (!game.hasArt) {
+                <span class="tile__badge">No art</span>
+              }
+            </div>
+            <div class="tile__body">
+              <span class="tile__title">{{ game.title }}</span>
+              <span class="tile__meta">{{ metaLine(game) }}</span>
+            </div>
+          </a>
+        }
+      </div>
+      <ajax-pagination
+        class="games__pager"
+        [length]="games().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
     </div>
-    <ajax-pagination
-      [length]="games().length"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      (pageChange)="onPage($event)"
-    />
   } @else if (view() === 'list') {
-    <div class="list">
-      @for (game of pagedGames(); track game.id) {
-        <a class="list__row" [routerLink]="['/games', game.id]">
-          <span class="swatch" [style.background]="game.accent"></span>
-          <div>
-            <strong>{{ game.title }}</strong>
-            <span>{{ game.system }} · {{ game.region }} · {{ game.year }} · {{ game.rating | number: '1.1-1' }}/5</span>
-          </div>
-        </a>
-      }
+    <div class="games__results">
+      <div class="list">
+        @for (game of pagedGames(); track game.id) {
+          <a class="list__row" [routerLink]="['/games', game.id]">
+            @if (coverFor(game); as cover) {
+              <img class="list__thumb" [src]="cover" [alt]="" />
+            } @else {
+              <span class="swatch" [style.background]="game.accent"></span>
+            }
+            <div>
+              <strong>{{ game.title }}</strong>
+              <span>{{ metaLine(game) }}</span>
+            </div>
+          </a>
+        }
+      </div>
+      <ajax-pagination
+        class="games__pager"
+        [length]="games().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
     </div>
-    <ajax-pagination
-      [length]="games().length"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      (pageChange)="onPage($event)"
-    />
   } @else {
-    <ajax-table [columns]="columns" [data]="pagedGames()" />
-    <ajax-pagination
-      [length]="games().length"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      (pageChange)="onPage($event)"
-    />
+    <div class="games__results">
+      <ajax-table [columns]="columns" [data]="pagedGames()" />
+      <ajax-pagination
+        class="games__pager"
+        [length]="games().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
+    </div>
   }
 </section>

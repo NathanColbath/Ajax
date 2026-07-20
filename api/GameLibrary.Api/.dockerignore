@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+**/Properties/launchSettings.json
+**/.vs/
+**/*.user
+**/*.db
+**/*.db-*

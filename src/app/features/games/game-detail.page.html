@@ -7,103 +7,442 @@
     </a>
 
     <div class="hero" [style.--accent]="g.accent">
-      <div class="hero__art">
-        <ajax-icon name="sports_esports" />
+      <button
+        type="button"
+        mat-icon-button
+        class="hero__overflow"
+        [matMenuTriggerFor]="gameActions"
+        aria-label="Game actions"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #gameActions="matMenu">
+        <button mat-menu-item type="button" (click)="download()">
+          <mat-icon>download</mat-icon>
+          <span>Download</span>
+        </button>
+        <button mat-menu-item type="button" (click)="toggleFavorite()">
+          <mat-icon>{{ g.favorite ? 'star' : 'star_border' }}</mat-icon>
+          <span>{{ g.favorite ? 'Favorited' : 'Favorite' }}</span>
+        </button>
+        <button
+          mat-menu-item
+          type="button"
+          [matMenuTriggerFor]="listsMenu"
+          [disabled]="addingToList()"
+        >
+          <mat-icon>playlist_add</mat-icon>
+          <span>Add to list</span>
+        </button>
+        @if (isAdmin) {
+          <button mat-menu-item type="button" (click)="deleteGame()">
+            <mat-icon>delete</mat-icon>
+            <span>Delete</span>
+          </button>
+        }
+      </mat-menu>
+
+      <mat-menu #listsMenu="matMenu">
+        @for (list of userLists(); track list.id) {
+          <button mat-menu-item type="button" (click)="addToList(list.id, list.name)">
+            <mat-icon>playlist_play</mat-icon>
+            <span>{{ list.name }}</span>
+          </button>
+        }
+        @if (userLists().length === 0) {
+          <button mat-menu-item type="button" (click)="goToLists()">
+            <mat-icon>open_in_new</mat-icon>
+            <span>No lists yet — open My lists</span>
+          </button>
+        }
+      </mat-menu>
+
+      <div class="hero__art" [class.hero__art--empty]="!coverUrl() && !g.hasArt">
+        @if (coverUrl(); as cover) {
+          <img [src]="cover" [alt]="g.title + ' cover'" />
+        } @else {
+          <ajax-icon name="sports_esports" />
+          <span class="hero__art-label">No art</span>
+        }
       </div>
+
       <div class="hero__body">
-        <p class="eyebrow">{{ g.system }} · {{ g.region }} · Shared library</p>
-        <h2>{{ g.title }}</h2>
+        <p class="hero__meta">{{ metaLine(g) }}</p>
+        <h1 class="hero__title">{{ g.title }}</h1>
+
         <div class="hero__stats">
-          <span class="rating" [attr.aria-label]="g.rating + ' out of 5'">
-            <strong>{{ stars(g.rating) }}</strong>
-            {{ g.rating | number: '1.1-1' }} / 5
-            <small>({{ g.ratingCount | number }} reviews)</small>
-          </span>
+          @if (g.ratingCount > 0) {
+            <span class="rating" [attr.aria-label]="g.rating + ' out of 5'">
+              <strong>{{ stars(g.rating) }}</strong>
+              {{ g.rating | number: '1.1-1' }} / 5
+              <small>({{ g.ratingCount | number }} reviews)</small>
+            </span>
+          } @else {
+            <span class="rating rating--empty">No library ratings yet</span>
+          }
           <span>{{ g.downloadCount | number }} downloads</span>
-          <span>Released {{ g.releaseDate | date: 'mediumDate' }}</span>
+          @if (showReleaseDate(g)) {
+            <span>Released {{ g.releaseDate | date: 'mediumDate' }}</span>
+          }
         </div>
-        <p class="hero__desc">{{ g.description }}</p>
+
+        @if (hasText(g.description)) {
+          <p class="hero__desc">{{ g.description }}</p>
+        }
+
         <div class="hero__chips">
+          <ajax-status-chip [label]="g.playStatus" status="neutral" />
           @for (genre of g.genres; track genre) {
             <ajax-status-chip [label]="genre" status="info" />
           }
-          <ajax-status-chip [label]="g.playStatus" status="neutral" />
-        </div>
-        <div class="hero__actions">
-          <ajax-button
-            variant="flat"
-            color="primary"
-            icon="download"
-            (clicked)="download(g.files[0]?.name ?? g.title)"
-          >
-            Download
-          </ajax-button>
-          <ajax-button
-            variant="stroked"
-            [icon]="g.favorite ? 'star' : 'star_border'"
-            (clicked)="toggleFavorite()"
-          >
-            {{ g.favorite ? 'Favorited' : 'Favorite' }}
-          </ajax-button>
         </div>
       </div>
     </div>
 
     <ajax-tabs>
-      <ajax-tab label="Overview">
-        <p class="overview-copy">{{ g.description }}</p>
-        <div class="meta-grid">
-          <ajax-card title="Publisher">{{ g.publisher }}</ajax-card>
-          <ajax-card title="Developer">{{ g.developer }}</ajax-card>
-          <ajax-card title="Players">{{ g.players }}</ajax-card>
-          <ajax-card title="Catalog">{{ g.owned ? 'In library' : 'Wishlist / missing dump' }}</ajax-card>
+      <ajax-tab label="About">
+        <div class="about">
+          <section class="about__section">
+            <h2 class="about__heading">About this game</h2>
+            @if (hasText(g.description)) {
+              <p class="about__synopsis">{{ g.description }}</p>
+            } @else {
+              <p class="about__muted">No synopsis yet.</p>
+            }
+            @if (aboutFacts(g); as facts) {
+              @if (facts.length > 0) {
+                <dl class="facts">
+                  @for (fact of facts; track fact.label) {
+                    <div class="facts__row">
+                      <dt>{{ fact.label }}</dt>
+                      <dd>{{ fact.value }}</dd>
+                    </div>
+                  }
+                </dl>
+              }
+            }
+          </section>
+
+          <section class="about__section">
+            <div class="about__heading-row">
+              <h2 class="about__heading">Screenshots</h2>
+            </div>
+            @if (aboutScreenshotIndices(g).length > 0) {
+              <div class="shot-strip">
+                @for (index of aboutScreenshotIndices(g); track index) {
+                  @if (isColorShot(g.screenshots[index] ?? '')) {
+                    <div class="shot-strip__item" [style.background]="g.screenshots[index]"></div>
+                  } @else if (screenshotUrls()[index]; as url) {
+                    <img class="shot-strip__item" [src]="url" [alt]="'Screenshot ' + (index + 1)" />
+                  } @else {
+                    <div class="shot-strip__item shot-strip__item--placeholder">Shot {{ index + 1 }}</div>
+                  }
+                }
+              </div>
+            } @else {
+              <ajax-empty-state
+                icon="image"
+                title="No screenshots"
+                description="Screenshots will appear here when available."
+              />
+            }
+          </section>
+
+          <section class="about__section">
+            <h2 class="about__heading">Ratings</h2>
+            <div class="ratings">
+              <article class="ratings__card">
+                <h3>Library</h3>
+                @if (g.ratingCount > 0) {
+                  <p class="ratings__score">{{ stars(g.rating) }} {{ g.rating | number: '1.1-1' }}</p>
+                  <p class="about__muted">{{ g.ratingCount }} review{{ g.ratingCount === 1 ? '' : 's' }}</p>
+                } @else {
+                  <p class="about__muted">Be the first to rate this title.</p>
+                }
+              </article>
+              <article class="ratings__card">
+                <h3>Public</h3>
+                @if (publicFeedback(); as pub) {
+                  @if (pub.available) {
+                    @if (pub.rating != null) {
+                      @if (pub.ratingScale === 100) {
+                        <p class="ratings__score">
+                          {{ pub.ratingProvider || 'IGDB' }} {{ pub.rating | number: '1.0-0' }}
+                        </p>
+                      } @else {
+                        <p class="ratings__score">{{ pub.rating | number: '1.1-1' }} / 5</p>
+                      }
+                    }
+                    @if (pub.metacritic != null) {
+                      <p class="about__muted">Critic score {{ pub.metacritic }}</p>
+                    }
+                    @if (pub.ratingsCount != null) {
+                      <p class="about__muted">{{ pub.ratingsCount | number }} public ratings</p>
+                    }
+                    @if (!pub.rating && pub.metacritic == null && pub.comments.length > 0) {
+                      <p class="about__muted">See curated discussion below.</p>
+                    }
+                    @if (pub.sourceUrl) {
+                      <a class="ratings__link" [href]="pub.sourceUrl" target="_blank" rel="noopener noreferrer">
+                        {{ pub.attribution }}
+                      </a>
+                    } @else if (pub.attribution) {
+                      <p class="about__muted">{{ pub.attribution }}</p>
+                    }
+                  } @else {
+                    <p class="about__muted">
+                      {{ pub.attribution || 'No curated public scores yet. Admins can run enrichment from Metadata.' }}
+                    </p>
+                  }
+                } @else {
+                  <p class="about__muted">Loading public feedback…</p>
+                }
+              </article>
+            </div>
+          </section>
+
+          <section class="about__section">
+            <h2 class="about__heading">Public comments</h2>
+            @if (publicFeedback(); as pub) {
+              @if (pub.available && pub.comments.length > 0) {
+                <div class="comments">
+                  @for (comment of pub.comments; track comment.url + comment.author) {
+                    <article class="comments__item">
+                      <header class="comments__meta">
+                        <strong>{{ comment.author }}</strong>
+                        @if (comment.createdAt) {
+                          <span>{{ comment.createdAt | date: 'mediumDate' }}</span>
+                        }
+                      </header>
+                      @if (comment.text) {
+                        <p>{{ comment.text }}</p>
+                      }
+                      @if (comment.url) {
+                        <a [href]="comment.url" target="_blank" rel="noopener noreferrer">View source</a>
+                      }
+                    </article>
+                  }
+                </div>
+                <p class="about__attrib">{{ pub.attribution }}</p>
+              } @else {
+                <ajax-empty-state
+                  icon="forum"
+                  title="No curated reviews"
+                  description="Admins can run Public enrichment (DeepSeek) from Metadata to add reviews, ratings, and screenshots."
+                />
+              }
+            }
+          </section>
+
+          <section class="about__section">
+            <h2 class="about__heading">Library reviews</h2>
+            <div class="review-form">
+              <div class="review-form__stars" role="group" aria-label="Your rating">
+                @for (n of [1, 2, 3, 4, 5]; track n) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.star-btn--on]="draftReviewRating >= n"
+                    (click)="setDraftRating(n)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+              <ajax-textarea
+                label="Your review"
+                [(ngModel)]="draftReviewBody"
+                name="reviewBody"
+                placeholder="What did you think?"
+              />
+              <div class="review-form__actions">
+                <ajax-button
+                  variant="flat"
+                  color="primary"
+                  [disabled]="reviewSaving()"
+                  (clicked)="saveReview()"
+                >
+                  {{ g.myRating ? 'Update review' : 'Post review' }}
+                </ajax-button>
+                @if (g.myRating) {
+                  <ajax-button variant="basic" (clicked)="deleteMyReview()">Remove</ajax-button>
+                }
+              </div>
+            </div>
+
+            <div class="reviews">
+              @for (review of reviews(); track review.id) {
+                <article class="reviews__item">
+                  <header class="reviews__meta">
+                    <span class="reviews__author">{{ review.authorName }}</span>
+                    <span class="reviews__stars">{{ stars(review.rating) }}</span>
+                    <span>{{ review.updatedAt | date: 'mediumDate' }}</span>
+                    @if (review.isMine) {
+                      <ajax-status-chip label="You" status="info" />
+                    }
+                  </header>
+                  @if (review.body) {
+                    <p>{{ review.body }}</p>
+                  }
+                </article>
+              } @empty {
+                <ajax-empty-state
+                  icon="rate_review"
+                  title="No reviews yet"
+                  description="Share a rating to start the library conversation."
+                />
+              }
+            </div>
+          </section>
         </div>
       </ajax-tab>
+
       <ajax-tab label="Media">
+        @if (isAdmin) {
+          <div class="media-admin">
+            <label class="file-btn">
+              Upload screenshots
+              <input type="file" accept="image/*" multiple hidden (change)="onScreenshotsSelected($event)" />
+            </label>
+          </div>
+        }
         <div class="shots">
-          @for (shot of g.screenshots; track shot) {
-            <div class="shot" [style.background]="shot"></div>
+          @for (index of screenshotIndices(g); track index) {
+            <div class="shot-wrap">
+              @if (isColorShot(g.screenshots[index] ?? '')) {
+                <div class="shot" [style.background]="g.screenshots[index]"></div>
+              } @else if (screenshotUrls()[index]; as url) {
+                <img class="shot shot--img" [src]="url" [alt]="'Screenshot ' + (index + 1)" />
+              } @else {
+                <div class="shot shot--placeholder">Shot {{ index + 1 }}</div>
+              }
+              @if (isAdmin && !isColorShot(g.screenshots[index] ?? '')) {
+                <ajax-button variant="basic" icon="delete" (clicked)="removeScreenshot(index)">
+                  Remove
+                </ajax-button>
+              }
+            </div>
           } @empty {
             <ajax-empty-state icon="image" title="No media" description="Screenshots will appear here." />
           }
         </div>
       </ajax-tab>
+
       <ajax-tab label="Files">
         <div class="files">
           @for (file of g.files; track file.id) {
             <article class="file">
-              <div>
-                <strong>{{ file.name }}</strong>
-                <span>{{ file.sizeLabel }} · {{ file.extension }}</span>
+              <div class="file__info">
+                <strong class="file__name">{{ file.name }}</strong>
+                <span class="file__meta">{{ file.sizeLabel }} · {{ file.extension }}</span>
               </div>
-              <ajax-button variant="stroked" icon="download" (clicked)="download(file.name)">
-                Download
-              </ajax-button>
+              <div class="file__actions">
+                <ajax-button variant="stroked" icon="download" (clicked)="download(file)">
+                  Download
+                </ajax-button>
+                @if (isAdmin) {
+                  <ajax-button variant="basic" icon="delete" (clicked)="deleteFile(file)">
+                    Delete
+                  </ajax-button>
+                }
+              </div>
             </article>
           } @empty {
-            <ajax-empty-state icon="folder_off" title="No files" description="Upload a dump to attach files." />
+            <ajax-empty-state
+              icon="folder_off"
+              title="No files"
+              description="Upload a dump to attach files."
+            />
           }
         </div>
       </ajax-tab>
-      <ajax-tab label="Metadata">
-        <dl class="meta-list">
-          <div><dt>Release date</dt><dd>{{ g.releaseDate | date: 'longDate' }}</dd></div>
-          <div><dt>Year</dt><dd>{{ g.year }}</dd></div>
-          <div><dt>Region</dt><dd>{{ g.region }}</dd></div>
-          <div><dt>Languages</dt><dd>{{ g.languages.join(', ') }}</dd></div>
-          <div><dt>Genres</dt><dd>{{ g.genres.join(', ') }}</dd></div>
-          <div><dt>Tags</dt><dd>{{ g.tags.join(', ') || '—' }}</dd></div>
-          <div><dt>Rating</dt><dd>{{ g.rating | number: '1.1-1' }} / 5 ({{ g.ratingCount }})</dd></div>
-          <div><dt>Downloads</dt><dd>{{ g.downloadCount | number }}</dd></div>
-        </dl>
-      </ajax-tab>
+
+      @if (isAdmin) {
+        <ajax-tab label="Metadata">
+          <div class="meta-admin">
+            @if (!editing()) {
+              <ajax-button variant="stroked" icon="edit" (clicked)="startEdit()">Edit metadata</ajax-button>
+            } @else {
+              <ajax-button variant="stroked" (clicked)="cancelEdit()">Cancel</ajax-button>
+              <ajax-button variant="flat" color="primary" [disabled]="saving()" (clicked)="saveMetadata()">
+                Save
+              </ajax-button>
+            }
+            <label class="file-btn">
+              Upload cover
+              <input type="file" accept="image/*" hidden (change)="onCoverSelected($event)" />
+            </label>
+            @if (g.hasArt) {
+              <ajax-button variant="basic" icon="delete" (clicked)="removeCover()">Remove cover</ajax-button>
+            }
+          </div>
+
+          @if (editing()) {
+            <div class="edit-grid">
+              <ajax-input label="Title" [(ngModel)]="draftTitle" name="title" />
+              <ajax-input label="Region" [(ngModel)]="draftRegion" name="region" />
+              <ajax-input label="Year" type="number" [(ngModel)]="draftYear" name="year" />
+              <ajax-input
+                label="Release date"
+                [(ngModel)]="draftReleaseDate"
+                name="releaseDate"
+                placeholder="1994-03-19"
+              />
+              <ajax-input label="Publisher" [(ngModel)]="draftPublisher" name="publisher" />
+              <ajax-input label="Developer" [(ngModel)]="draftDeveloper" name="developer" />
+              <ajax-input label="Players" [(ngModel)]="draftPlayers" name="players" />
+              <ajax-input
+                label="Genres"
+                [(ngModel)]="draftGenres"
+                name="genres"
+                placeholder="Action, Adventure"
+              />
+              <ajax-input label="Tags" [(ngModel)]="draftTags" name="tags" />
+              <ajax-input label="Languages" [(ngModel)]="draftLanguages" name="languages" />
+              <ajax-textarea label="Description" [(ngModel)]="draftDescription" name="description" />
+              <ajax-textarea label="Notes" [(ngModel)]="draftNotes" name="notes" />
+            </div>
+          } @else if (metadataRows(g); as rows) {
+            @if (rows.length > 0) {
+              <dl class="facts facts--meta">
+                @for (row of rows; track row.label) {
+                  <div class="facts__row">
+                    <dt>{{ row.label }}</dt>
+                    <dd>{{ row.value }}</dd>
+                  </div>
+                }
+              </dl>
+            } @else {
+              <ajax-empty-state
+                icon="label"
+                title="No metadata"
+                description="Catalog details will show up here once filled in."
+              />
+            }
+          }
+        </ajax-tab>
+      }
+
       <ajax-tab label="Notes">
-        <ajax-card title="Your notes">
-          <p>{{ g.notes || 'No notes yet.' }}</p>
-        </ajax-card>
+        @if (hasText(g.notes)) {
+          <div class="notes">
+            <p>{{ g.notes }}</p>
+          </div>
+        } @else {
+          <ajax-empty-state
+            icon="sticky_note_2"
+            title="No notes yet"
+            description="Personal notes for this title will appear here."
+          />
+        }
       </ajax-tab>
     </ajax-tabs>
   </section>
 } @else {
-  <ajax-empty-state icon="error" title="Game not found" description="This title is not in the shared catalog." />
+  <ajax-empty-state
+    icon="error"
+    title="Game not found"
+    description="This title is not in the shared catalog."
+  />
 }

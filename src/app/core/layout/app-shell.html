@@ -3,12 +3,26 @@
   [(opened)]="drawerOpen"
   [mode]="drawerMode()"
   [fixedInViewport]="true"
+  [autosize]="true"
+  [width]="drawerWidth()"
+  [class.shell--collapsed]="navCollapsed() && !isHandset()"
 >
-  <div drawer class="shell__nav">
-    <a routerLink="/" class="shell__brand" (click)="onNavClick()">
-      <ajax-icon name="sports_esports" />
-      <div>
-        <strong>Game Library</strong>
+  <div
+    drawer
+    class="shell__nav"
+    [class.shell__nav--collapsed]="navCollapsed() && !isHandset()"
+  >
+    <a
+      routerLink="/"
+      class="shell__brand"
+      (click)="onNavClick()"
+      [ajaxTooltip]="navCollapsed() && !isHandset() ? libraryName() : ''"
+      ajaxTooltipPosition="right"
+      [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
+    >
+      <img class="shell__logo" src="retologo.png" alt="" width="32" height="32" />
+      <div class="shell__brand-text">
+        <strong>{{ libraryName() }}</strong>
         <span>Collection Manager</span>
       </div>
     </a>
@@ -21,9 +35,12 @@
           [routerLinkActiveOptions]="{ exact: item.exact === true }"
           class="shell__link"
           (click)="onNavClick()"
+          [ajaxTooltip]="navCollapsed() && !isHandset() ? item.label : ''"
+          ajaxTooltipPosition="right"
+          [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
         >
           <ajax-icon [name]="item.icon" />
-          <span>{{ item.label }}</span>
+          <span class="shell__link-label">{{ item.label }}</span>
         </a>
       }
     </nav>
@@ -35,33 +52,45 @@
           routerLinkActive="is-active"
           class="shell__link shell__link--muted"
           (click)="onNavClick()"
+          [ajaxTooltip]="navCollapsed() && !isHandset() ? item.label : ''"
+          ajaxTooltipPosition="right"
+          [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
         >
           <ajax-icon [name]="item.icon" />
-          <span>{{ item.label }}</span>
+          <span class="shell__link-label">{{ item.label }}</span>
         </a>
       }
     </nav>
   </div>
 
   <div class="shell__main">
-    <ajax-toolbar color="primary" class="shell__toolbar">
-      @if (isHandset()) {
-        <ajax-button
-          variant="icon"
-          icon="menu"
-          ariaLabel="Open navigation"
-          (clicked)="toggleDrawer()"
-        />
-      }
+    <ajax-toolbar class="shell__toolbar">
+      <ajax-button
+        variant="icon"
+        [icon]="navToggleIcon()"
+        [ariaLabel]="navToggleLabel()"
+        (clicked)="toggleNav()"
+      />
       <h1 class="shell__title">{{ pageTitle() }}</h1>
       <span class="shell__spacer"></span>
-      <span class="shell__user">
-        {{ displayName() }}
-        @if (roleLabel()) {
-          <small>· {{ roleLabel() }}</small>
+      @if (!isHandset()) {
+        <span class="shell__user">
+          {{ displayName() }}
+          @if (roleLabel()) {
+            <small>· {{ roleLabel() }}</small>
+          }
+        </span>
+      }
+      <ajax-button
+        [variant]="isHandset() ? 'icon' : 'basic'"
+        icon="logout"
+        ariaLabel="Sign out"
+        (clicked)="signOut()"
+      >
+        @if (!isHandset()) {
+          Sign out
         }
-      </span>
-      <ajax-button variant="basic" icon="logout" (clicked)="signOut()">Sign out</ajax-button>
+      </ajax-button>
     </ajax-toolbar>
 
     <main class="shell__content">

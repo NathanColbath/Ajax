@@ -1,43 +1,223 @@
 <section class="uploads">
-  <header>
-    <p class="eyebrow">Import workflow</p>
+  <header class="uploads__header">
     <h2>Upload digital files</h2>
+    <p class="uploads__lede">
+      Drop one or many ROMs, assign system and game targets, then enqueue. Ready files upload even if
+      others still need attention.
+    </p>
   </header>
 
   <div class="uploads__layout">
     <div class="uploads__main">
-      <ajax-select
-        label="Target system"
-        placeholder="Optional — auto-detect later"
-        [ngModel]="systemId()"
-        (ngModelChange)="systemId.set($event)"
-        name="system"
-      >
-        @for (system of systems(); track system.id) {
-          <ajax-select-option [value]="system.id" [label]="system.name" />
-        }
-      </ajax-select>
-
       <ajax-upload-dropzone
         [multiple]="true"
-        accept=".nes,.sfc,.smc,.md,.gen,.bin,.cue,.iso,.chd,.zip"
+        [accept]="librarySettings.defaultUploadAccept()"
         (filesSelected)="onFiles($event)"
       />
 
+      @if (pending().length > 0) {
+        <section class="pending">
+          <div class="pending__header">
+            <div class="pending__title-block">
+              <h3>Ready to enqueue</h3>
+              <p class="pending__summary">{{ pendingSummary().label }}</p>
+            </div>
+            <div class="pending__actions">
+              @if (canApplySystemToAll()) {
+                <ajax-button variant="stroked" (clicked)="applySystemToAll()">
+                  Apply system to all
+                </ajax-button>
+              }
+              @if (canAttachAllToSameGame()) {
+                <ajax-button variant="stroked" (clicked)="attachAllToSameGame()">
+                  Attach all to same game
+                </ajax-button>
+              }
+              <ajax-button
+                variant="flat"
+                color="primary"
+                icon="cloud_upload"
+                [disabled]="!canEnqueue()"
+                (clicked)="enqueuePending()"
+              >
+                @if (enqueueing()) {
+                  Uploading… {{ transferPercent() ?? 0 }}%
+                } @else {
+                  Enqueue ready ({{ readyCount() }})
+                }
+              </ajax-button>
+            </div>
+          </div>
+
+          @if (enqueueing() && transferPercent() != null) {
+            <div
+              class="pending__transfer"
+              role="status"
+              [attr.aria-label]="'Uploading ' + transferPercent() + '%'"
+            >
+              <mat-progress-bar mode="determinate" [value]="transferPercent()!" />
+            </div>
+          }
+
+          <ul class="pending__list">
+            @for (item of pending(); track item.key) {
+              <li class="pending__item">
+                <div class="pending__file">
+                  <strong>{{ item.file.name }}</strong>
+                  <button type="button" class="pending__remove" (click)="removePending(item.key)">
+                    Remove
+                  </button>
+                </div>
+
+                @if (item.resolving) {
+                  <div class="pending__status"><ajax-spinner /></div>
+                } @else {
+                  @if (item.error && item.candidates.length === 0) {
+                    <p class="pending__error">{{ item.error }}</p>
+                  } @else {
+                    @if (item.error && !item.systemId) {
+                      <p class="pending__error">{{ item.error }}</p>
+                    }
+
+                    <ajax-select
+                      label="System"
+                      placeholder="Select system"
+                      [ngModel]="item.systemId"
+                      (ngModelChange)="setSystem(item.key, $event)"
+                      [name]="'system-' + item.key"
+                    >
+                      @for (system of item.candidates; track system.id) {
+                        <ajax-select-option [value]="system.id" [label]="system.name" />
+                      }
+                    </ajax-select>
+
+                    @if (item.systemId) {
+                      <ajax-select
+                        label="Target game"
+                        placeholder="Choose target"
+                        [ngModel]="item.gameMode"
+                        (ngModelChange)="setGameMode(item.key, $event)"
+                        [name]="'mode-' + item.key"
+                      >
+                        <ajax-select-option value="new" label="Create new game" />
+                        @if (item.games.length > 0) {
+                          <ajax-select-option value="existing" label="Attach to existing game" />
+                        }
+                      </ajax-select>
+
+                      @if (item.gameMode === 'existing') {
+                        <ajax-select
+                          label="Game"
+                          placeholder="Select game"
+                          [ngModel]="item.gameId"
+                          (ngModelChange)="setGameId(item.key, $event)"
+                          [name]="'game-' + item.key"
+                        >
+                          @for (game of item.games; track game.id) {
+                            <ajax-select-option [value]="game.id" [label]="game.title" />
+                          }
+                        </ajax-select>
+                      } @else {
+                        <ajax-input
+                          label="New game title"
+                          [ngModel]="item.createTitle"
+                          (ngModelChange)="setCreateTitle(item.key, $event)"
+                          [name]="'title-' + item.key"
+                        />
+                      }
+                    }
+                  }
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
       @if (loading()) {
         <div class="page-loading"><ajax-spinner /></div>
-      } @else if (queueItems().length === 0) {
-        <ajax-empty-state
-          icon="upload_file"
-          title="Queue is empty"
-          description="Drop ROM dumps or related media to begin."
-        />
       } @else {
-        <ajax-upload-queue
-          [items]="queueItems()"
-          (cancel)="cancel($event)"
-          (retry)="retry($event)"
-        />
+        <section class="queue-section">
+          <div class="queue-section__head">
+            <h3>Active queue</h3>
+            @if (totalProgress(); as total) {
+              <span class="queue-section__summary">{{ total.label }}</span>
+            }
+          </div>
+
+          @if (totalProgress(); as total) {
+            <div class="total-progress" role="status" [attr.aria-label]="total.label">
+              <mat-progress-bar mode="determinate" [value]="total.percent" />
+            </div>
+          }
+
+          @if (activeItems().length === 0 && !enqueueing()) {
+            <ajax-empty-state
+              icon="hourglass_empty"
+              title="Nothing processing"
+              description="Enqueued files appear here until cataloging finishes."
+            />
+          } @else if (activeItems().length > 0) {
+            <ajax-upload-queue
+              mode="active"
+              [items]="pagedActiveItems()"
+              (cancel)="cancel($event)"
+              (retry)="retry($event)"
+              (download)="download($event)"
+              (remove)="removeJob($event)"
+            />
+            @if (activeItems().length > activePageSize()) {
+              <ajax-pagination
+                class="queue-section__pager"
+                [length]="activeItems().length"
+                [pageIndex]="activePageIndex()"
+                [pageSize]="activePageSize()"
+                [pageSizeOptions]="[5, 8, 15, 25]"
+                (pageChange)="onActivePage($event)"
+              />
+            }
+          }
+        </section>
+
+        <section class="queue-section queue-section--past">
+          <button
+            type="button"
+            class="past-toggle"
+            (click)="togglePastUploads()"
+            [attr.aria-expanded]="showPastUploads()"
+          >
+            <span class="past-toggle__label">
+              Past uploads
+              @if (pastItems().length > 0) {
+                <span class="past-toggle__count">({{ pastItems().length }})</span>
+              }
+            </span>
+            <span class="past-toggle__action">
+              {{ showPastUploads() ? 'Hide' : 'Show' }}
+              <mat-icon aria-hidden="true">{{
+                showPastUploads() ? 'expand_less' : 'expand_more'
+              }}</mat-icon>
+            </span>
+          </button>
+
+          @if (showPastUploads()) {
+            @if (pastItems().length === 0) {
+              <ajax-empty-state
+                icon="history"
+                title="No past uploads"
+                description="Completed and failed jobs show up here."
+              />
+            } @else {
+              <ajax-upload-queue
+                mode="history"
+                [items]="pastItems()"
+                (retry)="retry($event)"
+                (download)="download($event)"
+                (remove)="removeJob($event)"
+              />
+            }
+          }
+        </section>
       }
     </div>
 

@@ -41,3 +41,23 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# .NET / API
+**/bin/
+**/obj/
+api/data/*.db
+api/data/*.db-*
+api/data/files/**
+!api/data/files/.gitkeep
+!api/data/.gitkeep
+
+# Docker Compose bind-mounted data (SQLite + files)
+/data/**
+!/data/.gitkeep
+
+# Local Compose secrets
+.env
+.env.local
+
+# VPS package output
+/dist-package/

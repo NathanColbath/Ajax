@@ -1,0 +1,113 @@
+<section class="logs">
+  <header class="logs__head">
+    <div>
+      <h2>Application logs</h2>
+      <p class="lede">HTTP requests, domain events, and background worker activity.</p>
+    </div>
+    <div class="logs__actions">
+      <ajax-button variant="stroked" (clicked)="toggleAutoRefresh()">
+        {{ autoRefresh() ? 'Pause refresh' : 'Resume refresh' }}
+      </ajax-button>
+      <ajax-button variant="stroked" (clicked)="reload(true)">Refresh</ajax-button>
+      <ajax-button variant="stroked" (clicked)="purge()">Purge 30d+</ajax-button>
+    </div>
+  </header>
+
+  <div class="logs__filters">
+    <ajax-select label="Level" [(ngModel)]="level" name="level">
+      <ajax-select-option value="" label="All levels" />
+      <ajax-select-option value="Information" label="Information" />
+      <ajax-select-option value="Warning" label="Warning" />
+      <ajax-select-option value="Error" label="Error" />
+      <ajax-select-option value="Critical" label="Critical" />
+    </ajax-select>
+    <ajax-select label="Category" [(ngModel)]="category" name="category">
+      <ajax-select-option value="" label="All categories" />
+      <ajax-select-option value="Http" label="Http" />
+      <ajax-select-option value="Auth" label="Auth" />
+      <ajax-select-option value="Games" label="Games" />
+      <ajax-select-option value="Uploads" label="Uploads" />
+      <ajax-select-option value="Metadata" label="Metadata" />
+      <ajax-select-option value="Exports" label="Exports" />
+      <ajax-select-option value="Duplicates" label="Duplicates" />
+      <ajax-select-option value="Worker" label="Worker" />
+      <ajax-select-option value="Users" label="Users" />
+      <ajax-select-option value="Config" label="Config" />
+    </ajax-select>
+    <ajax-input
+      label="Search"
+      placeholder="Message, path, event…"
+      [(ngModel)]="search"
+      name="search"
+    />
+    <div class="logs__filter-actions">
+      <ajax-button variant="flat" color="primary" (clicked)="applyFilters()">Apply</ajax-button>
+      <ajax-button variant="stroked" (clicked)="clearFilters()">Clear</ajax-button>
+    </div>
+  </div>
+
+  @if (loading() && entries().length === 0) {
+    <div class="page-loading"><ajax-spinner /></div>
+  } @else if (entries().length === 0) {
+    <ajax-empty-state
+      icon="receipt_long"
+      title="No log entries"
+      description="Activity will appear here as the API handles requests and jobs."
+    />
+  } @else {
+    <div class="logs__layout">
+      <div class="logs__list" role="list">
+        @for (entry of entries(); track entry.id) {
+          <button
+            type="button"
+            class="log-row"
+            [class.is-active]="selected()?.id === entry.id"
+            [class.log-row--warn]="entry.level === 'Warning'"
+            [class.log-row--error]="entry.level === 'Error' || entry.level === 'Critical'"
+            (click)="select(entry)"
+          >
+            <span class="log-row__time">{{ entry.timestamp | date: 'short' }}</span>
+            <span class="log-row__level">{{ entry.level }}</span>
+            <span class="log-row__cat">{{ entry.category }}</span>
+            <span class="log-row__msg">{{ entry.message }}</span>
+          </button>
+        }
+      </div>
+
+      <aside class="logs__detail">
+        @if (selected(); as entry) {
+          <div class="logs__detail-head">
+            <h3>{{ entry.eventType }}</h3>
+            <ajax-button variant="stroked" icon="delete" (clicked)="deleteSelected()">Delete</ajax-button>
+          </div>
+          <dl>
+            <div><dt>Time</dt><dd>{{ entry.timestamp | date: 'medium' }}</dd></div>
+            <div><dt>Level</dt><dd>{{ entry.level }}</dd></div>
+            <div><dt>Category</dt><dd>{{ entry.category }}</dd></div>
+            <div><dt>Message</dt><dd>{{ entry.message }}</dd></div>
+            @if (entry.userId) {
+              <div><dt>User</dt><dd>{{ entry.userId }}</dd></div>
+            }
+            @if (entry.correlationId) {
+              <div><dt>Correlation</dt><dd class="mono">{{ entry.correlationId }}</dd></div>
+            }
+            @if (entry.requestMethod) {
+              <div>
+                <dt>Request</dt>
+                <dd>{{ entry.requestMethod }} {{ entry.requestPath }} · {{ entry.statusCode }} · {{ entry.durationMs }}ms</dd>
+              </div>
+            }
+            @if (entry.entityType) {
+              <div><dt>Entity</dt><dd>{{ entry.entityType }} {{ entry.entityId }}</dd></div>
+            }
+          </dl>
+          @if (entry.exception) {
+            <pre class="logs__exception">{{ entry.exception }}</pre>
+          }
+        } @else {
+          <p class="muted">Select a log entry to inspect details.</p>
+        }
+      </aside>
+    </div>
+  }
+</section>

@@ -1,107 +1,293 @@
 <section class="physical">
-  <header class="physical__head">
-    <div>
-      <p class="eyebrow">Shelf inventory</p>
+  <header class="physical__toolbar">
+    <div class="physical__heading">
       <h2>Physical collection</h2>
     </div>
     <div class="physical__actions">
-      <ajax-button
-        variant="icon"
-        icon="grid_view"
-        ariaLabel="Card view"
-        (clicked)="view.set('cards')"
-      />
-      <ajax-button
-        variant="icon"
-        icon="table_rows"
-        ariaLabel="Table view"
-        (clicked)="view.set('table')"
-      />
-      <ajax-button variant="stroked" icon="add_location_alt" (clicked)="showCreate.set(true)">
-        Add location
-      </ajax-button>
+      <ajax-button variant="icon" icon="grid_view" ariaLabel="Grid view" (clicked)="setView('grid')" />
+      <ajax-button variant="icon" icon="view_list" ariaLabel="List view" (clicked)="setView('list')" />
+      <ajax-button variant="icon" icon="table_rows" ariaLabel="Table view" (clicked)="setView('table')" />
+      @if (isAdmin) {
+        <ajax-button variant="stroked" icon="add_location_alt" (clicked)="openCreateLocation()">
+          Location
+        </ajax-button>
+        <ajax-button variant="flat" color="primary" icon="add" (clicked)="openAddGame()">
+          Add game
+        </ajax-button>
+      }
     </div>
   </header>
 
-  @if (showCreate()) {
-    <div class="create-loc">
-      <ajax-input label="Location name" [(ngModel)]="newLocationName" name="locName" placeholder="Shelf B3" />
-      <ajax-select label="Type" [(ngModel)]="newLocationType" name="locType">
-        <ajax-select-option value="shelf" label="Shelf" />
-        <ajax-select-option value="bin" label="Bin" />
-        <ajax-select-option value="cabinet" label="Cabinet" />
-        <ajax-select-option value="room" label="Room" />
+  <div class="physical__controls">
+    <ajax-input
+      class="physical__search"
+      label="Search"
+      placeholder="Title, system, or location"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+      name="search"
+    />
+    <div class="physical__filter-bar">
+      <ajax-select
+        label="Location"
+        [ngModel]="locationFilter()"
+        (ngModelChange)="onLocationFilter($event)"
+      >
+        <ajax-select-option value="" label="All locations" />
+        @for (loc of locations(); track loc.id) {
+          <ajax-select-option [value]="loc.id" [label]="loc.name" />
+        }
       </ajax-select>
-      <ajax-input label="Notes" [(ngModel)]="newLocationNotes" name="locNotes" placeholder="Optional" />
-      <div class="create-loc__actions">
-        <ajax-button variant="stroked" (clicked)="showCreate.set(false)">Cancel</ajax-button>
-        <ajax-button variant="flat" color="primary" (clicked)="createLocation()">Create</ajax-button>
+      <ajax-select
+        label="System"
+        [ngModel]="systemFilter()"
+        (ngModelChange)="onSystemFilter($event)"
+      >
+        <ajax-select-option value="" label="All systems" />
+        @for (system of systemFacets(); track system) {
+          <ajax-select-option [value]="system" [label]="system" />
+        }
+      </ajax-select>
+      <ajax-select
+        label="Status"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilter($event)"
+      >
+        <ajax-select-option value="" label="Any status" />
+        <ajax-select-option value="in" label="Checked in" />
+        <ajax-select-option value="out" label="Checked out" />
+      </ajax-select>
+      @if (hasActiveFilters()) {
+        <ajax-button class="physical__clear" variant="stroked" icon="filter_alt_off" (clicked)="clearFilters()">
+          Clear
+        </ajax-button>
+      }
+    </div>
+  </div>
+
+  @if (showLocationForm() && isAdmin) {
+    <div class="panel">
+      <h3>{{ editingLocationId() ? 'Edit location' : 'New location' }}</h3>
+      <div class="panel__grid">
+        <ajax-input label="Name" [(ngModel)]="newLocationName" placeholder="Shelf B3" />
+        <ajax-select label="Type" [(ngModel)]="newLocationType">
+          <ajax-select-option value="shelf" label="Shelf" />
+          <ajax-select-option value="bin" label="Bin" />
+          <ajax-select-option value="cabinet" label="Cabinet" />
+          <ajax-select-option value="room" label="Room" />
+        </ajax-select>
+        <ajax-input label="Notes" [(ngModel)]="newLocationNotes" placeholder="Optional" />
+      </div>
+      <div class="panel__actions">
+        <ajax-button variant="stroked" (clicked)="showLocationForm.set(false)">Cancel</ajax-button>
+        <ajax-button variant="flat" color="primary" [disabled]="busy()" (clicked)="saveLocation()">
+          Save
+        </ajax-button>
+      </div>
+      @if (editingLocationId(); as locId) {
+        @for (loc of locations(); track loc.id) {
+          @if (loc.id === locId) {
+            <div class="panel__actions">
+              <ajax-button variant="basic" icon="delete" (clicked)="deleteLocation(loc)">
+                Delete location
+              </ajax-button>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+
+  @if (showAddGame() && isAdmin) {
+    <div class="panel">
+      <h3>Add physical game</h3>
+      <div class="panel__grid">
+        <ajax-select label="System" [(ngModel)]="addSystemId">
+          @for (sys of systems(); track sys.id) {
+            <ajax-select-option [value]="sys.id" [label]="sys.name" />
+          }
+        </ajax-select>
+        <ajax-select label="Location" [(ngModel)]="addLocationId">
+          @for (loc of locations(); track loc.id) {
+            <ajax-select-option [value]="loc.id" [label]="loc.name" />
+          }
+        </ajax-select>
+        <ajax-select label="Condition" [(ngModel)]="addCondition">
+          <ajax-select-option value="mint" label="Mint" />
+          <ajax-select-option value="good" label="Good" />
+          <ajax-select-option value="fair" label="Fair" />
+          <ajax-select-option value="poor" label="Poor" />
+        </ajax-select>
+        <ajax-select label="Completeness" [(ngModel)]="addCompleteness">
+          <ajax-select-option value="cib" label="CIB" />
+          <ajax-select-option value="cart" label="Cart / disc" />
+          <ajax-select-option value="box" label="Box" />
+          <ajax-select-option value="loose" label="Loose" />
+        </ajax-select>
+      </div>
+
+      <ajax-input
+        label="Title search"
+        placeholder="Search metadata by title…"
+        [ngModel]="titleQuery"
+        (ngModelChange)="onTitleSearch($event)"
+      />
+
+      @if (searching()) {
+        <div class="inline-loading"><ajax-spinner /></div>
+      }
+
+      @if (selectedHit(); as hit) {
+        <p class="selected-hit">Selected: <strong>{{ hitLabel(hit) }}</strong> ({{ hit.source }})</p>
+      }
+
+      @if (searchResults().length > 0) {
+        <ul class="search-hits">
+          @for (hit of searchResults(); track hit.externalId ?? hit.title) {
+            <li>
+              <div>
+                <strong>{{ hit.title }}</strong>
+                <span>{{ hitLabel(hit) }}</span>
+              </div>
+              <ajax-button variant="stroked" icon="check" (clicked)="pickHit(hit)">Select</ajax-button>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="panel__actions">
+        <ajax-button variant="stroked" (clicked)="showAddGame.set(false)">Cancel</ajax-button>
+        <ajax-button
+          variant="flat"
+          color="primary"
+          [disabled]="busy() || !selectedHit()"
+          (clicked)="savePhysicalGame()"
+        >
+          Save to inventory
+        </ajax-button>
       </div>
     </div>
   }
 
-  <div class="filters">
-    <ajax-button
-      [variant]="!locationId() ? 'flat' : 'stroked'"
-      color="primary"
-      (clicked)="filterLocation(undefined)"
-    >
-      All locations
-    </ajax-button>
-    @for (loc of locations(); track loc.id) {
-      <ajax-button
-        [variant]="locationId() === loc.id ? 'flat' : 'stroked'"
-        color="primary"
-        (clicked)="filterLocation(loc.id)"
-      >
-        {{ loc.name }}
-      </ajax-button>
-    }
-  </div>
-
   @if (loading()) {
     <div class="page-loading"><ajax-spinner /></div>
-  } @else if (items().length === 0) {
-    <ajax-empty-state icon="inventory_2" title="No items here" description="Try another shelf or bin." />
-  } @else if (view() === 'cards') {
-    <div class="shelf">
-      @for (item of pagedItems(); track item.id) {
-        <article class="item" [style.--accent]="item.accent">
-          <div class="item__art"></div>
-          <div class="item__body">
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.system }} · {{ item.locationName }}</p>
-            <div class="item__chips">
-              <ajax-status-chip [label]="item.condition" status="neutral" />
-              <ajax-status-chip [label]="item.completeness" status="info" />
-              @if (item.checkedOut) {
-                <ajax-status-chip [label]="'Out · ' + (item.borrower || 'Guest')" status="warning" />
+  } @else if (filteredItems().length === 0) {
+    <ajax-empty-state
+      icon="inventory_2"
+      title="No physical items"
+      description="Try clearing filters or adding a game via title search."
+      actionLabel="Clear filters"
+      (action)="clearFilters()"
+    />
+  } @else if (view() === 'grid') {
+    <div class="physical__results">
+      <div class="cover-grid">
+        @for (item of pagedItems(); track item.id) {
+          <div class="tile" [style.--accent]="item.accent">
+            <a
+              class="tile__link"
+              [routerLink]="item.gameId ? ['/games', item.gameId] : null"
+              [class.tile__link--static]="!item.gameId"
+            >
+              <div class="tile__art" [class.tile__art--empty]="!coverFor(item)">
+                @if (coverFor(item); as cover) {
+                  <img class="tile__cover" [src]="cover" [alt]="item.title + ' cover'" />
+                } @else if (!item.hasArt) {
+                  <span class="tile__badge">No art</span>
+                }
+              </div>
+              <div class="tile__body">
+                <span class="tile__title">{{ item.title }}</span>
+                <span class="tile__meta">{{ metaLine(item) }}</span>
+              </div>
+            </a>
+            <div class="tile__actions">
+              <ajax-button
+                [variant]="item.checkedOut ? 'stroked' : 'flat'"
+                color="primary"
+                (clicked)="toggleCheckout(item)"
+              >
+                {{ item.checkedOut ? 'In' : 'Out' }}
+              </ajax-button>
+              @if (isAdmin) {
+                <ajax-button variant="basic" icon="delete" (clicked)="deleteItem(item)" />
               }
             </div>
           </div>
-          <ajax-button
-            [variant]="item.checkedOut ? 'stroked' : 'flat'"
-            color="primary"
-            (clicked)="toggleCheckout(item)"
-          >
-            {{ item.checkedOut ? 'Check in' : 'Check out' }}
-          </ajax-button>
-        </article>
-      }
+        }
+      </div>
+      <ajax-pagination
+        class="physical__pager"
+        [length]="filteredItems().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
     </div>
-    <ajax-pagination
-      [length]="items().length"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      (pageChange)="onPage($event)"
-    />
+  } @else if (view() === 'list') {
+    <div class="physical__results">
+      <div class="list">
+        @for (item of pagedItems(); track item.id) {
+          <div class="list__row">
+            <a
+              class="list__main"
+              [routerLink]="item.gameId ? ['/games', item.gameId] : null"
+              [class.list__main--static]="!item.gameId"
+            >
+              @if (coverFor(item); as cover) {
+                <img class="list__thumb" [src]="cover" [alt]="" />
+              } @else {
+                <span class="swatch" [style.background]="item.accent"></span>
+              }
+              <div>
+                <strong>{{ item.title }}</strong>
+                <span>{{ metaLine(item) }}</span>
+              </div>
+            </a>
+            <div class="list__actions">
+              <ajax-button
+                [variant]="item.checkedOut ? 'stroked' : 'flat'"
+                color="primary"
+                (clicked)="toggleCheckout(item)"
+              >
+                {{ item.checkedOut ? 'Check in' : 'Check out' }}
+              </ajax-button>
+              @if (isAdmin) {
+                @if (editingItemId() === item.id) {
+                  <ajax-select label="Location" [(ngModel)]="editLocationId">
+                    @for (loc of locations(); track loc.id) {
+                      <ajax-select-option [value]="loc.id" [label]="loc.name" />
+                    }
+                  </ajax-select>
+                  <ajax-button variant="flat" color="primary" (clicked)="saveEditItem(item)">Save</ajax-button>
+                  <ajax-button variant="stroked" (clicked)="cancelEditItem()">Cancel</ajax-button>
+                } @else {
+                  <ajax-button variant="stroked" icon="edit" (clicked)="startEditItem(item)">Edit</ajax-button>
+                  <ajax-button variant="basic" icon="delete" (clicked)="deleteItem(item)">Delete</ajax-button>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <ajax-pagination
+        class="physical__pager"
+        [length]="filteredItems().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
+    </div>
   } @else {
-    <ajax-table [columns]="columns" [data]="pagedItems()" />
-    <ajax-pagination
-      [length]="items().length"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      (pageChange)="onPage($event)"
-    />
+    <div class="physical__results">
+      <ajax-table [columns]="columns" [data]="pagedItems()" />
+      <ajax-pagination
+        class="physical__pager"
+        [length]="filteredItems().length"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        (pageChange)="onPage($event)"
+      />
+    </div>
   }
 </section>

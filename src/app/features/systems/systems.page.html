@@ -1,7 +1,6 @@
 <section class="systems">
   <header class="systems__head">
     <div>
-      <p class="eyebrow">Platform registry</p>
       <h2>Game systems</h2>
     </div>
     <ajax-button variant="flat" color="primary" icon="add" (clicked)="openAdd()">Add system</ajax-button>
@@ -34,32 +33,96 @@
           >
             <ajax-status-chip [label]="system.shortName" status="info" />
             <strong>{{ system.name }}</strong>
-            <span>{{ system.manufacturer }} · {{ system.gameCount }} games</span>
+            <span>{{ system.manufacturer }} · {{ system.gameCount }} games · {{ system.status }}</span>
           </button>
         }
       </div>
 
       @if (selected(); as system) {
         <aside class="panel">
-          <h3>{{ system.name }}</h3>
-          <p>Map file extensions used for auto-matching uploads.</p>
-          <div class="exts">
-            @for (ext of system.extensions; track ext) {
-              <ajax-status-chip [label]="ext" status="neutral" />
+          <div class="panel__head">
+            <h3>{{ system.name }}</h3>
+            @if (!editing()) {
+              <div class="panel__head-actions">
+                <ajax-button variant="stroked" icon="edit" (clicked)="startEdit()">Edit</ajax-button>
+                <ajax-button variant="stroked" icon="delete" (clicked)="deleteSystem()">Delete</ajax-button>
+              </div>
             }
           </div>
-          <div class="ext-add">
-            <ajax-input
-              label="New extension"
-              placeholder=".iso"
-              [ngModel]="newExtension()"
-              (ngModelChange)="newExtension.set($event)"
-              name="ext"
-            />
-            <ajax-button variant="flat" color="primary" (clicked)="addExtension()">Add</ajax-button>
-          </div>
+
+          @if (logoUrl(); as logo) {
+            <img class="panel__logo" [src]="logo" [alt]="system.name + ' logo'" />
+          }
+
+          @if (editing()) {
+            <div class="edit-grid">
+              <ajax-input label="Name" [(ngModel)]="editName" name="editName" />
+              <ajax-input label="Short name" [(ngModel)]="editShort" name="editShort" />
+              <ajax-input label="Manufacturer" [(ngModel)]="editManufacturer" name="editMfg" />
+              <ajax-input label="Release period" [(ngModel)]="editReleasePeriod" name="editPeriod" placeholder="1990–2003" />
+              <ajax-input label="Generation" [(ngModel)]="editGeneration" name="editGen" placeholder="16-bit" />
+              <ajax-input label="Region" [(ngModel)]="editRegion" name="editRegion" />
+              <ajax-input label="Preferred storage path" [(ngModel)]="editPreferredPath" name="editPath" />
+              <ajax-input label="Icon" [(ngModel)]="editIcon" name="editIcon" />
+              <ajax-input label="Accent" [(ngModel)]="editAccent" name="editAccent" />
+              <ajax-input
+                label="Libretro platform folder"
+                [(ngModel)]="editLibretroId"
+                name="editLibretro"
+                placeholder="Nintendo - Super Nintendo Entertainment System"
+              />
+              <ajax-select label="Status" [(ngModel)]="editStatus" name="editStatus">
+                <ajax-select-option value="active" label="Active" />
+                <ajax-select-option value="hidden" label="Hidden" />
+                <ajax-select-option value="archived" label="Archived" />
+              </ajax-select>
+              <ajax-textarea label="Description" [(ngModel)]="editDescription" name="editDesc" />
+              <ajax-textarea label="Emulator / launch notes" [(ngModel)]="editEmulatorInfo" name="editEmu" />
+            </div>
+            <div class="panel__actions">
+              <label class="file-btn">
+                Upload logo
+                <input type="file" accept="image/*" hidden (change)="onLogoSelected($event)" />
+              </label>
+              <ajax-button variant="stroked" (clicked)="cancelEdit()">Cancel</ajax-button>
+              <ajax-button variant="flat" color="primary" (clicked)="saveEdit()">Save</ajax-button>
+            </div>
+          } @else {
+            <p class="panel__desc">{{ system.description || 'No description yet.' }}</p>
+            <dl class="meta-list">
+              <div><dt>Manufacturer</dt><dd>{{ system.manufacturer }}</dd></div>
+              <div><dt>Release period</dt><dd>{{ system.releasePeriod || '—' }}</dd></div>
+              <div><dt>Generation</dt><dd>{{ system.generation || '—' }}</dd></div>
+              <div><dt>Region</dt><dd>{{ system.region || '—' }}</dd></div>
+              <div><dt>Status</dt><dd>{{ system.status }}</dd></div>
+              <div><dt>Storage path</dt><dd>{{ system.preferredStoragePath || '—' }}</dd></div>
+              <div><dt>Libretro ID</dt><dd>{{ system.metadataProviderIds['libretro'] || '—' }}</dd></div>
+              <div><dt>Emulator</dt><dd>{{ system.emulatorInfo || '—' }}</dd></div>
+            </dl>
+            <p>Map file extensions used for auto-matching uploads.</p>
+            <div class="exts">
+              @for (ext of system.extensions; track ext) {
+                <ajax-status-chip [label]="ext" status="neutral" />
+              }
+            </div>
+            <div class="ext-add">
+              <ajax-input
+                label="New extension"
+                placeholder=".iso"
+                [ngModel]="newExtension()"
+                (ngModelChange)="newExtension.set($event)"
+                name="ext"
+              />
+              <ajax-button variant="flat" color="primary" (clicked)="addExtension()">Add</ajax-button>
+            </div>
+            <label class="file-btn file-btn--block">
+              Upload logo
+              <input type="file" accept="image/*" hidden (change)="onLogoSelected($event)" />
+            </label>
+          }
         </aside>
       }
     </div>
   }
 </section>
+

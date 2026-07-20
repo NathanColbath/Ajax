@@ -1,6 +1,5 @@
 <section class="exports">
   <header>
-    <p class="eyebrow">Export builder</p>
     <h2>Exports &amp; backups</h2>
   </header>
 
@@ -70,14 +69,22 @@
       <ol class="timeline">
         @for (job of jobs(); track job.id) {
           <li>
-            <ajax-status-chip
+              <ajax-status-chip
               [label]="job.status"
-              [status]="job.status === 'complete' ? 'success' : job.status === 'failed' ? 'danger' : 'info'"
+              [status]="job.status === 'complete' ? 'success' : job.status === 'failed' || job.status === 'error' ? 'danger' : 'info'"
             />
             <div>
               <strong>{{ job.format | uppercase }} · {{ job.scopes.join(', ') }}</strong>
               <span>{{ job.createdLabel }}</span>
             </div>
+            @if (job.status === 'complete') {
+              <ajax-button variant="stroked" icon="download" (clicked)="download(job)">
+                Download
+              </ajax-button>
+            }
+            @if (job.status === 'complete' || job.status === 'failed' || job.status === 'error') {
+              <ajax-button variant="basic" icon="delete" (clicked)="deleteJob(job)">Delete</ajax-button>
+            }
           </li>
         }
       </ol>

@@ -1,0 +1,37 @@
+services:
+  api:
+    build:
+      context: ./api/GameLibrary.Api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Data Source=/data/gamelibrary.db
+      Storage__RootPath: /data/files
+      # Same-origin via nginx; keep for any direct API access
+      Cors__Origins__0: ${PUBLIC_ORIGIN:-http://localhost}
+      Auth0__Domain: ${AUTH0_DOMAIN:-dev-82ln3zs1yykao3qo.us.auth0.com}
+      Auth0__Audience: ${AUTH0_AUDIENCE:-https://game-library-api}
+      Hasheous__ApiKey: ${HASHEOUS_API_KEY:-}
+      Igdb__ClientId: ${IGDB_CLIENT_ID:-}
+      Igdb__ClientSecret: ${IGDB_CLIENT_SECRET:-}
+      DeepSeek__ApiKey: ${DEEPSEEK_API_KEY:-}
+    volumes:
+      # SQLite DB + uploads/library/artwork/exports on the host
+      - ./data:/data
+    # Optional: expose API directly (SPA uses nginx :80 → /api)
+    # ports:
+    #   - "5080:8080"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        AUTH0_APP_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost}
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    depends_on:
+      - api
