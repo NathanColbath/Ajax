@@ -131,6 +131,7 @@ h2 {
 
 .integrations__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -138,6 +139,7 @@ h2 {
   border-radius: 8px;
   border: 1px solid var(--mat-sys-outline-variant);
   background: var(--mat-sys-surface-container);
+  min-width: 0;
 }
 
 .config__save {

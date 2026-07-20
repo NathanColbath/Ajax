@@ -20,6 +20,29 @@ import { PageEvent, MatPaginatorModule } from '@angular/material/paginator';
   styles: `
     :host {
       display: block;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    mat-paginator {
+      max-width: 100%;
+    }
+
+    ::ng-deep .mat-mdc-paginator-container {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      row-gap: 0.35rem;
+    }
+
+    @media (max-width: 480px) {
+      ::ng-deep .mat-mdc-paginator-container {
+        justify-content: center;
+      }
+
+      ::ng-deep .mat-mdc-paginator-navigation-first,
+      ::ng-deep .mat-mdc-paginator-navigation-last {
+        display: none !important;
+      }
     }
   `,
 })

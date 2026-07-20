@@ -72,9 +72,17 @@ html {
   ));
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -86,6 +94,12 @@ body {
   font-weight: var(--mat-sys-body-medium-weight);
   line-height: var(--mat-sys-body-medium-line-height);
   letter-spacing: var(--mat-sys-body-medium-tracking);
+}
+
+ajax-root {
+  display: block;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .ajax-toast {

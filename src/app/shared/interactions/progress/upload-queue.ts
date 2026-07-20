@@ -63,6 +63,7 @@ export type AjaxUploadQueueMode = 'active' | 'history';
 
     .item {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.75rem;
       align-items: center;
       justify-content: space-between;
@@ -70,6 +71,7 @@ export type AjaxUploadQueueMode = 'active' | 'history';
       border: 1px solid var(--mat-sys-outline-variant);
       border-radius: 8px;
       background: var(--mat-sys-surface-container);
+      min-width: 0;
     }
 
     .item__main {
@@ -90,6 +92,7 @@ export type AjaxUploadQueueMode = 'active' | 'history';
     .item__meta {
       font-size: 0.78rem;
       color: var(--mat-sys-on-surface-variant);
+      overflow-wrap: anywhere;
     }
 
     .item__actions {

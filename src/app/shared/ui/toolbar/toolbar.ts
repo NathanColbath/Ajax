@@ -13,6 +13,14 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   styles: `
     :host {
       display: block;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    mat-toolbar {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
     }
   `,
 })
