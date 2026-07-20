@@ -27,7 +27,7 @@ Release tags: `X.Y.Z`, `vX.Y.Z`, short SHA, and `latest`.
 | Name | Example | Purpose |
 |------|---------|---------|
 | `PUBLIC_ORIGIN` | `https://games.example.com` | Baked into the web image as Auth0 origin; used for deploy health checks |
-| `VPS_APP_DIR` | `/opt/retrojax` | Absolute path to the Compose project on the VPS |
+| `VPS_APP_DIR` | `/root/retrojax` | Absolute path to the Compose project on the VPS |
 | `VPS_PORT` | `22` | SSH port (optional, default 22) |
 | `GHCR_IMAGE_PREFIX` | `nathancolbath/ajax` | Optional override for image path |
 
@@ -47,12 +47,12 @@ Packages must stay **private**. The VPS Docker login needs `read:packages` (see 
 2. Create the app directory and copy deploy files only (no full source tree required):
 
 ```bash
-sudo mkdir -p /opt/retrojax/data /opt/retrojax/scripts
+mkdir -p /root/retrojax/data /root/retrojax/scripts
 # copy from this repo:
 #   docker-compose.prod.yml
 #   .env.example → .env
 #   scripts/deploy-vps.sh
-sudo chmod +x /opt/retrojax/scripts/deploy-vps.sh
+chmod +x /root/retrojax/scripts/deploy-vps.sh
 ```
 
 3. Edit `.env` (`PUBLIC_ORIGIN`, Auth0, API keys, `HTTP_PORT`). Align Auth0 Allowed Callback / Logout / Web Origins with `PUBLIC_ORIGIN`.
@@ -64,13 +64,15 @@ echo YOUR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
 Prefer leaving credentials in `~/.docker/config.json` on the VPS so Actions only needs SSH (no `GHCR_READ_TOKEN` in GitHub). Alternatively set `GHCR_USER` / `GHCR_TOKEN` in the environment used by `deploy-vps.sh`.
 
-5. Set GitHub Variables/Secrets listed above (`VPS_APP_DIR=/opt/retrojax`, etc.).
+The prod Compose file joins the external Docker network **`nginx_default`** (Nginx Proxy Manager). Ensure that network exists (`docker network ls`) before the first `up`. Proxy host: scheme `http`, forward hostname = web container name (e.g. `retrojax-web-1`), port `80`.
+
+5. Set GitHub Variables/Secrets listed above (`VPS_APP_DIR=/root/retrojax`, etc.).
 6. Trigger the first deploy by pushing `version/0.1.0` (or use **Actions → Deploy → Run workflow** with a version after images exist).
 
 Manual deploy on the box:
 
 ```bash
-cd /opt/retrojax
+cd /root/retrojax
 ./scripts/deploy-vps.sh 1.2.0
 ```
 
