@@ -54,7 +54,7 @@ function Sanitize-BranchSlug([string]$raw) {
 
 function Prompt-FromList([string]$label, [string[]]$options) {
   Write-Host ""
-  Write-Host "Select $label:" -ForegroundColor Cyan
+  Write-Host "Select ${label}:" -ForegroundColor Cyan
   for ($i = 0; $i -lt $options.Count; $i++) {
     Write-Host ("  {0,2}) {1}" -f ($i + 1), $options[$i])
   }
@@ -106,9 +106,14 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 
 $status = git status --porcelain
 if ($status -and -not $Force) {
-  Write-Host "Working tree has uncommitted changes. Commit/stash them, or re-run with -Force." -ForegroundColor Yellow
+  Write-Host "Working tree has uncommitted changes:" -ForegroundColor Yellow
   git status -sb
-  throw "Refusing to create a branch on a dirty working tree (use -Force to override)."
+  Write-Host ""
+  $continueDirty = Read-Host "Create branch anyway? [Y/n]"
+  if ($continueDirty -and $continueDirty -notmatch '^[Yy]') {
+    Write-Host "Cancelled. Commit/stash first, or re-run with -Force."
+    exit 0
+  }
 }
 
 if (-not $Type) {
