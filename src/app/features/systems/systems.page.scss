@@ -99,10 +99,12 @@ h2 {
 
 .panel__head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;
   margin-bottom: 0.75rem;
+  min-width: 0;
 }
 
 .panel__head-actions {
@@ -146,7 +148,7 @@ h2 {
 
   div {
     display: grid;
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
     gap: 0.5rem;
     font-size: 0.9rem;
   }
@@ -158,6 +160,14 @@ h2 {
 
   dd {
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 400px) {
+  .meta-list div {
+    grid-template-columns: 1fr;
   }
 }
 

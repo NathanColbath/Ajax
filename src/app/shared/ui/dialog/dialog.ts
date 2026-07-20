@@ -15,12 +15,14 @@ export class AjaxDialog {
     return this.dialog.open(component, {
       width: '480px',
       ...config,
+      maxWidth: config?.maxWidth ?? 'calc(100vw - 2rem)',
     });
   }
 
   confirm(data: AjaxConfirmDialogData): Observable<boolean | undefined> {
     const ref = this.dialog.open<AjaxConfirmDialog, AjaxConfirmDialogData, boolean>(AjaxConfirmDialog, {
       width: '420px',
+      maxWidth: 'calc(100vw - 2rem)',
       data: {
         confirmLabel: 'Confirm',
         cancelLabel: 'Cancel',

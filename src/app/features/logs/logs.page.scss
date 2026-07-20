@@ -82,6 +82,9 @@ h2 {
   gap: 0.55rem;
   align-items: center;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   text-align: left;
   padding: 0.65rem 0.8rem;
   border-radius: 8px;
@@ -110,6 +113,10 @@ h2 {
 .log-row__cat {
   font-size: 0.75rem;
   color: var(--mat-sys-on-surface-variant);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .log-row__msg {
@@ -117,6 +124,39 @@ h2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .log-row {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: start;
+  }
+
+  .log-row__time {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .log-row__level {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .log-row__cat {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .log-row__msg {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+  }
 }
 
 .logs__detail {
@@ -126,10 +166,14 @@ h2 {
   border: 1px solid var(--mat-sys-outline-variant);
   position: sticky;
   top: 4.5rem;
+  min-width: 0;
+  max-width: 100%;
 
   h3 {
     margin: 0;
     font-size: 1.05rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   dl {
@@ -159,6 +203,7 @@ h2 {
 
 .logs__detail-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;

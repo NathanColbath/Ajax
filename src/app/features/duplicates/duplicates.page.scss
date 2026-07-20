@@ -28,11 +28,18 @@ h2 {
 
 .group__head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 .group__files {
@@ -47,14 +54,18 @@ h2 {
   align-items: center;
   padding: 0.9rem 1rem;
   border-top: 1px solid var(--mat-sys-outline-variant);
+  min-width: 0;
 
   strong {
     display: block;
+    overflow-wrap: anywhere;
   }
 
   p {
     margin: 0.2rem 0 0;
     font-size: 0.8rem;
     opacity: 0.7;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 }

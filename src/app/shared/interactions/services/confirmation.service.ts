@@ -12,6 +12,7 @@ export class AjaxConfirmationService {
       AjaxConfirmationDialog,
       {
         width: '420px',
+        maxWidth: 'calc(100vw - 2rem)',
         data: {
           confirmLabel: 'Confirm',
           cancelLabel: 'Cancel',

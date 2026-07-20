@@ -122,8 +122,11 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  min-width: 0;
 
   strong {
+    flex: 1;
+    min-width: 0;
     font-size: 0.92rem;
     font-weight: 500;
     overflow: hidden;
@@ -133,6 +136,7 @@ h2 {
 }
 
 .pending__remove {
+  flex-shrink: 0;
   border: 0;
   background: transparent;
   color: var(--mat-sys-on-surface-variant);
