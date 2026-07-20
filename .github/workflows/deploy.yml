@@ -1,14 +1,22 @@
 name: Deploy
 
 on:
-  release:
-    types: [published]
+  # Called by Release after GHCR push (GITHUB_TOKEN cannot trigger release→workflow)
+  workflow_call:
+    inputs:
+      version:
+        description: "Semver to deploy (e.g. 1.2.0 or v1.2.0)"
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       version:
         description: "Semver to deploy (e.g. 1.2.0 or v1.2.0)"
         required: true
         type: string
+  # Manual releases created in the GitHub UI (user token) still auto-deploy
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -26,14 +34,13 @@ jobs:
         id: version
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            RAW="${{ inputs.version }}"
-          else
+          RAW="${{ inputs.version }}"
+          if [[ -z "$RAW" && "${{ github.event_name }}" == "release" ]]; then
             RAW="${{ github.event.release.tag_name }}"
           fi
           RAW="${RAW#v}"
           if [[ ! "$RAW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Invalid version: $RAW (expected X.Y.Z)"
+            echo "::error::Invalid version: ${RAW:-<empty>} (expected X.Y.Z)"
             exit 1
           fi
           echo "version=$RAW" >> "$GITHUB_OUTPUT"
@@ -70,7 +77,7 @@ jobs:
           PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
         run: |
           if [[ -z "${PUBLIC_ORIGIN:-}" ]]; then
-            echo "PUBLIC_ORIGIN not set — skipping health check"
+            echo "PUBLIC_ORIGIN not set - skipping health check"
             exit 0
           fi
           ORIGIN="${PUBLIC_ORIGIN%/}"

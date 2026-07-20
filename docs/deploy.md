@@ -22,7 +22,9 @@ npm run cut-version -- 0.1.0
 The script updates [`src/app/core/version.ts`](../src/app/core/version.ts) (shown in the nav footer as `vX.Y.Z`) and `package.json`, commits that bump on the version branch, then pushes.
 
 3. [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds/pushes images and creates GitHub Release `v0.1.0`
-4. [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) SSHs to the VPS, pulls images, and restarts Compose
+4. The same Release run then calls [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (SSH → pull → `up -d`)
+
+> Note: GitHub does not start other workflows from events created with `GITHUB_TOKEN`, so Deploy is invoked via `workflow_call` from Release rather than listening only to `release: published`.
 
 CI on every PR/`main` push builds both Docker images ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) without publishing.
 

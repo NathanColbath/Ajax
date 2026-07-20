@@ -17,6 +17,8 @@ jobs:
   release:
     name: Build, push, and release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Parse version from branch
         id: version
@@ -135,3 +137,11 @@ jobs:
             --title "$TAG" \
             --notes-file "$NOTES_FILE" \
             --target "${{ github.sha }}"
+
+  deploy:
+    name: Deploy to VPS
+    needs: release
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
