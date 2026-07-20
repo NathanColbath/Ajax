@@ -7,7 +7,12 @@
     "api": "dotnet run --project api/GameLibrary.Api --launch-profile http",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "branch": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/new-branch.ps1",
+    "cut-version": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/cut-version.ps1",
+    "cut-version:patch": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/cut-version.ps1 -Bump patch",
+    "cut-version:minor": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/cut-version.ps1 -Bump minor",
+    "cut-version:major": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/cut-version.ps1 -Bump major"
   },
   "prettier": {
     "printWidth": 100,

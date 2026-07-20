@@ -5,11 +5,17 @@ Retrojax ships via **GitHub Actions** → private **GHCR** images → **self-hos
 ## Flow
 
 1. Merge work into `main`
-2. Cut a version branch and push (PowerShell helper):
+2. Cut a version branch and push:
+
+```bash
+npm run cut-version:patch    # or :minor / :major
+# explicit version:
+npm run cut-version -- 0.1.0
+```
 
 ```powershell
+# same via PowerShell:
 .\scripts\cut-version.ps1 0.1.0
-# or bump from latest v* tag:
 .\scripts\cut-version.ps1 -Bump patch
 ```
 
