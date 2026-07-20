@@ -24,6 +24,31 @@ import { AjaxTab } from './tab';
   styles: `
     :host {
       display: block;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    mat-tab-group {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    :host ::ng-deep .mat-mdc-tab-body-wrapper,
+    :host ::ng-deep .mat-mdc-tab-body-content {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    :host ::ng-deep .mat-mdc-tab-body-content {
+      overflow-x: hidden;
+    }
+
+    :host ::ng-deep .mat-mdc-tab-header {
+      max-width: 100%;
+    }
+
+    :host ::ng-deep .mat-mdc-tab-labels {
+      max-width: 100%;
     }
   `,
 })

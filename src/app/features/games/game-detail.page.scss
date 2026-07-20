@@ -4,9 +4,17 @@
   min-height: 40vh;
 }
 
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .detail {
   display: grid;
   gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .back {
@@ -17,6 +25,8 @@
   position: relative;
   display: grid;
   gap: 0;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border-radius: 10px;
   background: var(--mat-sys-surface-container);
@@ -92,7 +102,14 @@
   display: grid;
   gap: 0.65rem;
   align-content: start;
+  min-width: 0;
   padding: 1.15rem 1.2rem 1.25rem;
+}
+
+@media (max-width: 480px) {
+  .hero__body {
+    padding: 1rem 0.9rem 1.1rem;
+  }
 }
 
 .hero__meta {
@@ -100,6 +117,8 @@
   font-size: 0.8rem;
   line-height: 1.35;
   color: var(--mat-sys-on-surface-variant);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hero__title {
@@ -108,6 +127,8 @@
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hero__stats {
@@ -134,10 +155,13 @@
 
 .hero__desc {
   margin: 0;
-  max-width: 58ch;
+  max-width: min(58ch, 100%);
+  min-width: 0;
   font-size: 0.92rem;
   line-height: 1.5;
   color: var(--mat-sys-on-surface);
+  overflow-wrap: anywhere;
+  word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -163,10 +187,11 @@
 
 .facts__row {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
   gap: 0.75rem;
   padding: 0.7rem 0.95rem;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  min-width: 0;
 
   &:last-child {
     border-bottom: 0;
@@ -180,13 +205,23 @@
 
   dd {
     margin: 0;
+    min-width: 0;
     font-size: 0.92rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .facts__row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
   }
 }
 
 @media (min-width: 640px) {
   .facts__row {
-    grid-template-columns: 140px 1fr;
+    grid-template-columns: minmax(0, 8.75rem) minmax(0, 1fr);
   }
 }
 
@@ -197,12 +232,15 @@
 .about {
   display: grid;
   gap: 1.5rem;
+  min-width: 0;
+  max-width: 100%;
   padding-top: 0.85rem;
 }
 
 .about__section {
   display: grid;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .about__heading-row {
@@ -221,8 +259,11 @@
 .about__synopsis {
   margin: 0;
   line-height: 1.6;
-  max-width: 72ch;
+  max-width: min(72ch, 100%);
+  min-width: 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .about__muted {
@@ -314,6 +355,7 @@
 .reviews__item {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
   padding: 0.85rem 0.95rem;
   border-radius: 10px;
   border: 1px solid var(--mat-sys-outline-variant);
@@ -322,6 +364,9 @@
   p {
     margin: 0;
     line-height: 1.5;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   a {
@@ -473,6 +518,7 @@
 
 .notes {
   margin-top: 0.85rem;
+  min-width: 0;
   padding: 0.95rem 1rem;
   border-radius: 10px;
   border: 1px solid var(--mat-sys-outline-variant);
@@ -481,7 +527,9 @@
   p {
     margin: 0;
     line-height: 1.55;
-    max-width: 65ch;
+    max-width: min(65ch, 100%);
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
