@@ -1,13 +1,14 @@
-# Create and checkout a scoped branch: (scope)-name
+# Create and checkout a branch: (type/area)-name
 #
 # Usage:
 #   .\scripts\new-branch.ps1
-#   .\scripts\new-branch.ps1 -Scope feat -Name "add-login"
-#   .\scripts\new-branch.ps1 -Scope io -Name physical-scan -BaseBranch main
+#   .\scripts\new-branch.ps1 -Type fix -Area ui -Name "update-for-mobile-devices"
+#   .\scripts\new-branch.ps1 -Type feat -Area io -Name physical-scan -BaseBranch main
 
 [CmdletBinding()]
 param(
-  [string]$Scope = "",
+  [string]$Type = "",
+  [string]$Area = "",
   [string]$Name = "",
   [string]$BaseBranch = "main",
   [switch]$Force
@@ -15,7 +16,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$KnownScopes = @(
+$KnownTypes = @(
   "feat",
   "fix",
   "chore",
@@ -25,10 +26,20 @@ $KnownScopes = @(
   "style",
   "perf",
   "ci",
-  "build",
-  "io",
+  "build"
+)
+
+$KnownAreas = @(
   "api",
-  "ui"
+  "ui",
+  "io",
+  "auth",
+  "uploads",
+  "physical",
+  "deploy",
+  "db",
+  "mobile",
+  "web"
 )
 
 function Sanitize-BranchSlug([string]$raw) {
@@ -41,30 +52,30 @@ function Sanitize-BranchSlug([string]$raw) {
   return $slug
 }
 
-function Prompt-Scope {
+function Prompt-FromList([string]$label, [string[]]$options) {
   Write-Host ""
-  Write-Host "Select a scope:" -ForegroundColor Cyan
-  for ($i = 0; $i -lt $KnownScopes.Count; $i++) {
-    Write-Host ("  {0,2}) {1}" -f ($i + 1), $KnownScopes[$i])
+  Write-Host "Select $label:" -ForegroundColor Cyan
+  for ($i = 0; $i -lt $options.Count; $i++) {
+    Write-Host ("  {0,2}) {1}" -f ($i + 1), $options[$i])
   }
-  Write-Host ("  {0,2}) custom" -f ($KnownScopes.Count + 1))
+  Write-Host ("  {0,2}) custom" -f ($options.Count + 1))
   Write-Host ""
 
   while ($true) {
-    $choice = Read-Host "Scope number (or type a custom scope)"
+    $choice = Read-Host "$label number (or type a custom value)"
     $choice = $choice.Trim()
     if (-not $choice) { continue }
 
     if ($choice -match '^\d+$') {
       $n = [int]$choice
-      if ($n -ge 1 -and $n -le $KnownScopes.Count) {
-        return $KnownScopes[$n - 1]
+      if ($n -ge 1 -and $n -le $options.Count) {
+        return $options[$n - 1]
       }
-      if ($n -eq ($KnownScopes.Count + 1)) {
-        $custom = Read-Host "Custom scope"
+      if ($n -eq ($options.Count + 1)) {
+        $custom = Read-Host "Custom $label"
         $custom = Sanitize-BranchSlug $custom
         if ($custom) { return $custom }
-        Write-Host "Scope cannot be empty." -ForegroundColor Yellow
+        Write-Host "$label cannot be empty." -ForegroundColor Yellow
         continue
       }
       Write-Host "Invalid number." -ForegroundColor Yellow
@@ -73,7 +84,7 @@ function Prompt-Scope {
 
     $custom = Sanitize-BranchSlug $choice
     if ($custom) { return $custom }
-    Write-Host "Scope cannot be empty." -ForegroundColor Yellow
+    Write-Host "$label cannot be empty." -ForegroundColor Yellow
   }
 }
 
@@ -100,11 +111,18 @@ if ($status -and -not $Force) {
   throw "Refusing to create a branch on a dirty working tree (use -Force to override)."
 }
 
-if (-not $Scope) {
-  $Scope = Prompt-Scope
+if (-not $Type) {
+  $Type = Prompt-FromList "type" $KnownTypes
 } else {
-  $Scope = Sanitize-BranchSlug $Scope
-  if (-not $Scope) { throw "Scope cannot be empty." }
+  $Type = Sanitize-BranchSlug $Type
+  if (-not $Type) { throw "Type cannot be empty." }
+}
+
+if (-not $Area) {
+  $Area = Prompt-FromList "area" $KnownAreas
+} else {
+  $Area = Sanitize-BranchSlug $Area
+  if (-not $Area) { throw "Area cannot be empty." }
 }
 
 if (-not $Name) {
@@ -114,7 +132,7 @@ if (-not $Name) {
   if (-not $Name) { throw "Name cannot be empty." }
 }
 
-$branch = "($Scope)-$Name"
+$branch = "($Type/$Area)-$Name"
 
 Write-Host ""
 Write-Host "Creating branch: $branch" -ForegroundColor Cyan
@@ -132,7 +150,7 @@ if ($current -ne $BaseBranch) {
   if ($LASTEXITCODE -ne 0) { throw "Failed to checkout $BaseBranch" }
 }
 
-$existing = git show-ref --verify --quiet "refs/heads/$branch" 2>$null
+git show-ref --verify --quiet "refs/heads/$branch" 2>$null
 if ($LASTEXITCODE -eq 0) {
   Write-Host "Branch already exists: $branch" -ForegroundColor Yellow
   $switch = Read-Host "Check it out instead? [Y/n]"
