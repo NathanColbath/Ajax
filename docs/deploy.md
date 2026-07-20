@@ -5,8 +5,15 @@ Retrojax ships via **GitHub Actions** → private **GHCR** images → **self-hos
 ## Flow
 
 1. Merge work into `main`
-2. Cut a version branch: `git checkout -b version/1.2.0 main` and push it
-3. [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds/pushes images and creates GitHub Release `v1.2.0`
+2. Cut a version branch and push (PowerShell helper):
+
+```powershell
+.\scripts\cut-version.ps1 0.1.0
+# or bump from latest v* tag:
+.\scripts\cut-version.ps1 -Bump patch
+```
+
+3. [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds/pushes images and creates GitHub Release `v0.1.0`
 4. [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) SSHs to the VPS, pulls images, and restarts Compose
 
 CI on every PR/`main` push builds both Docker images ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) without publishing.
