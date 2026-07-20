@@ -118,6 +118,35 @@ Write-Host "Creating $branch..." -ForegroundColor Cyan
 git checkout -b $branch
 if ($LASTEXITCODE -ne 0) { throw "Failed to create $branch" }
 
+Write-Host "Updating app version to $Version..." -ForegroundColor Cyan
+$versionTs = Join-Path $RepoRoot "src\app\core\version.ts"
+$packageJson = Join-Path $RepoRoot "package.json"
+if (-not (Test-Path $versionTs)) {
+  throw "Missing version file: $versionTs"
+}
+if (-not (Test-Path $packageJson)) {
+  throw "Missing package.json"
+}
+
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$versionTsContent = @"
+/** App semver — updated by scripts/cut-version.ps1 when cutting a release branch. */
+export const APP_VERSION = '$Version';
+
+"@
+[System.IO.File]::WriteAllText($versionTs, $versionTsContent, $utf8NoBom)
+
+$pkg = Get-Content $packageJson -Raw
+if ($pkg -notmatch '"version"\s*:\s*"[^"]*"') {
+  throw "Could not find version field in package.json"
+}
+$pkg = [regex]::Replace($pkg, '("version"\s*:\s*")[^"]*(")', "`${1}$Version`${2}", 1)
+if (-not $pkg.EndsWith("`n")) { $pkg += "`n" }
+[System.IO.File]::WriteAllText($packageJson, $pkg, $utf8NoBom)
+git add -- src/app/core/version.ts package.json
+git commit -m "chore: release $Version"
+if ($LASTEXITCODE -ne 0) { throw "Failed to commit version bump" }
+
 Write-Host "Pushing $branch to $Remote..." -ForegroundColor Cyan
 git push -u $Remote $branch
 if ($LASTEXITCODE -ne 0) { throw "Failed to push $branch" }

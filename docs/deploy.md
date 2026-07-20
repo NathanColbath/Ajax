@@ -13,6 +13,8 @@ Retrojax ships via **GitHub Actions** → private **GHCR** images → **self-hos
 .\scripts\cut-version.ps1 -Bump patch
 ```
 
+The script updates [`src/app/core/version.ts`](../src/app/core/version.ts) (shown in the nav footer as `vX.Y.Z`) and `package.json`, commits that bump on the version branch, then pushes.
+
 3. [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds/pushes images and creates GitHub Release `v0.1.0`
 4. [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) SSHs to the VPS, pulls images, and restarts Compose
 

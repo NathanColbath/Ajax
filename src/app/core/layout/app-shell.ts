@@ -8,7 +8,8 @@ import { AUTH0_APP_ORIGIN } from '../auth/auth0.config';
 import { SessionService } from '../auth/session.service';
 import { LibrarySettingsService } from '../config/library-settings.service';
 import { AjaxButton, AjaxDrawer, AjaxIcon, AjaxToolbar, AjaxTooltip } from '../../shared/ui';
-import { APP_NAV_FOOTER, APP_NAV_ITEMS, NavItem } from './nav-items';
+import { APP_NAV_ITEMS, NavItem } from './nav-items';
+import { APP_VERSION } from '../version';
 
 @Component({
   selector: 'ajax-app-shell',
@@ -33,6 +34,7 @@ export class AppShell {
   readonly sessionService = inject(SessionService);
   private readonly librarySettings = inject(LibrarySettingsService);
   protected readonly window = window;
+  readonly appVersion = APP_VERSION;
 
   readonly drawerOpen = signal(true);
   /** Desktop rail: icons only. Independent of mobile open/close. */
@@ -63,7 +65,6 @@ export class AppShell {
   );
 
   readonly navItems = computed(() => APP_NAV_ITEMS.filter((item) => this.canSee(item)));
-  readonly footerItems = computed(() => APP_NAV_FOOTER.filter((item) => this.canSee(item)));
   readonly displayName = computed(() => this.sessionService.displayName() ?? 'Guest');
   readonly roleLabel = computed(() => this.sessionService.role()?.replace('_', ' ') ?? '');
   readonly libraryName = computed(() => this.librarySettings.libraryName());

@@ -24,7 +24,3 @@ export const APP_NAV_ITEMS: NavItem[] = [
   { path: '/config', label: 'Config', icon: 'tune', minRole: 'admin' },
   { path: '/settings', label: 'Settings', icon: 'settings' },
 ];
-
-export const APP_NAV_FOOTER: NavItem[] = [
-  { path: '/ui', label: 'Shared UI', icon: 'widgets', minRole: 'admin' },
-];

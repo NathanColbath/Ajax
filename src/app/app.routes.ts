@@ -127,14 +127,6 @@ export const routes: Routes = [
         data: { title: 'Settings' },
         title: 'Settings · Retrojax',
       },
-      {
-        path: 'ui',
-        loadComponent: () =>
-          import('./features/ui-showcase/ui-showcase.page').then((m) => m.UiShowcasePage),
-        canActivate: [roleGuard],
-        data: { title: 'Shared UI', minRole: 'admin' },
-        title: 'Shared UI · Retrojax',
-      },
     ],
   },
   { path: '**', redirectTo: '' },

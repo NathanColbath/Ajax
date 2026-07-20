@@ -45,22 +45,14 @@
       }
     </nav>
 
-    <nav class="shell__footer-nav" aria-label="Developer">
-      @for (item of footerItems(); track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="is-active"
-          class="shell__link shell__link--muted"
-          (click)="onNavClick()"
-          [ajaxTooltip]="navCollapsed() && !isHandset() ? item.label : ''"
-          ajaxTooltipPosition="right"
-          [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
-        >
-          <ajax-icon [name]="item.icon" />
-          <span class="shell__link-label">{{ item.label }}</span>
-        </a>
-      }
-    </nav>
+    <div
+      class="shell__version"
+      [ajaxTooltip]="navCollapsed() && !isHandset() ? 'v' + appVersion : ''"
+      ajaxTooltipPosition="right"
+      [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
+    >
+      <span class="shell__version-label">v{{ appVersion }}</span>
+    </div>
   </div>
 
   <div class="shell__main">
