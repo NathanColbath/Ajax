@@ -129,11 +129,7 @@ if (-not (Test-Path $packageJson)) {
 }
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-$versionTsContent = @"
-/** App semver — updated by scripts/cut-version.ps1 when cutting a release branch. */
-export const APP_VERSION = '$Version';
-
-"@
+$versionTsContent = "/** App semver - updated by scripts/cut-version.ps1 when cutting a release branch. */`nexport const APP_VERSION = '$Version';`n"
 [System.IO.File]::WriteAllText($versionTs, $versionTsContent, $utf8NoBom)
 
 $pkg = Get-Content $packageJson -Raw
@@ -143,6 +139,7 @@ if ($pkg -notmatch '"version"\s*:\s*"[^"]*"') {
 $pkg = [regex]::Replace($pkg, '("version"\s*:\s*")[^"]*(")', "`${1}$Version`${2}", 1)
 if (-not $pkg.EndsWith("`n")) { $pkg += "`n" }
 [System.IO.File]::WriteAllText($packageJson, $pkg, $utf8NoBom)
+
 git add -- src/app/core/version.ts package.json
 git commit -m "chore: release $Version"
 if ($LASTEXITCODE -ne 0) { throw "Failed to commit version bump" }
@@ -159,7 +156,7 @@ if ($remoteUrl -match 'github\.com[:/](.+?)(?:\.git)?$') {
 }
 
 Write-Host ""
-Write-Host "Done. Pushed $branch — Release workflow should start." -ForegroundColor Green
+Write-Host "Done. Pushed $branch - Release workflow should start." -ForegroundColor Green
 Write-Host "  Tag/release: $tag"
 Write-Host "  Images:      ghcr.io/nathancolbath/ajax/web:$Version"
 Write-Host "  Images:      ghcr.io/nathancolbath/ajax/api:$Version"
@@ -168,7 +165,7 @@ if ($actionsUrl) {
 }
 Write-Host ""
 Write-Host "After Release succeeds, deploy (auto if secrets set) or on VPS:" -ForegroundColor Yellow
-Write-Host "  cd /root/retrojax && ./scripts/deploy-vps.sh $Version"
+Write-Host ('  cd /root/retrojax; ./scripts/deploy-vps.sh ' + $Version)
 Write-Host ""
 Write-Host "You are on branch $branch. Switch back when ready:" -ForegroundColor DarkGray
 Write-Host "  git checkout $BaseBranch"
