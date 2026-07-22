@@ -47,6 +47,7 @@ export class SystemsPage implements OnDestroy {
   editRegion = '';
   editPreferredPath = '';
   editEmulatorInfo = '';
+  editEmulatorJsCore = '';
   editStatus: GameSystem['status'] = 'active';
   editLibretroId = '';
   editIcon = '';
@@ -131,6 +132,7 @@ export class SystemsPage implements OnDestroy {
         preferredStoragePath: '',
         metadataProviderIds: {},
         emulatorInfo: '',
+        emulatorJsCore: '',
         status: 'active',
       })
       .subscribe((created) => {
@@ -184,6 +186,7 @@ export class SystemsPage implements OnDestroy {
         region: this.editRegion.trim(),
         preferredStoragePath: this.editPreferredPath.trim(),
         emulatorInfo: this.editEmulatorInfo,
+        emulatorJsCore: this.editEmulatorJsCore.trim(),
         status: this.editStatus,
         icon: this.editIcon.trim() || system.icon,
         accent: this.editAccent.trim() || system.accent,
@@ -261,6 +264,7 @@ export class SystemsPage implements OnDestroy {
     this.editRegion = system.region;
     this.editPreferredPath = system.preferredStoragePath;
     this.editEmulatorInfo = system.emulatorInfo;
+    this.editEmulatorJsCore = system.emulatorJsCore ?? '';
     this.editStatus = system.status;
     this.editLibretroId = system.metadataProviderIds['libretro'] ?? '';
     this.editIcon = system.icon;

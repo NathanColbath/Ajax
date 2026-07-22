@@ -30,6 +30,13 @@ export const routes: Routes = [
         title: 'Games · Retrojax',
       },
       {
+        path: 'games/:id/play',
+        loadComponent: () =>
+          import('./features/games/game-play.page').then((m) => m.GamePlayPage),
+        data: { title: 'Play' },
+        title: 'Play · Retrojax',
+      },
+      {
         path: 'games/:id',
         loadComponent: () =>
           import('./features/games/game-detail.page').then((m) => m.GameDetailPage),

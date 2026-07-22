@@ -18,6 +18,15 @@
       </button>
 
       <mat-menu #gameActions="matMenu">
+        <button
+          mat-menu-item
+          type="button"
+          [disabled]="!canPlay()"
+          (click)="play()"
+        >
+          <mat-icon>sports_esports</mat-icon>
+          <span>Play</span>
+        </button>
         <button mat-menu-item type="button" (click)="download()">
           <mat-icon>download</mat-icon>
           <span>Download</span>

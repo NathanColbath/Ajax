@@ -78,6 +78,12 @@
               </ajax-select>
               <ajax-textarea label="Description" [(ngModel)]="editDescription" name="editDesc" />
               <ajax-textarea label="Emulator / launch notes" [(ngModel)]="editEmulatorInfo" name="editEmu" />
+              <ajax-input
+                label="EmulatorJS core"
+                [(ngModel)]="editEmulatorJsCore"
+                name="editEjsCore"
+                placeholder="nes, snes, gba, segaMD…"
+              />
             </div>
             <div class="panel__actions">
               <label class="file-btn">
@@ -98,6 +104,7 @@
               <div><dt>Storage path</dt><dd>{{ system.preferredStoragePath || '—' }}</dd></div>
               <div><dt>Libretro ID</dt><dd>{{ system.metadataProviderIds['libretro'] || '—' }}</dd></div>
               <div><dt>Emulator</dt><dd>{{ system.emulatorInfo || '—' }}</dd></div>
+              <div><dt>EmulatorJS core</dt><dd>{{ system.emulatorJsCore || '—' }}</dd></div>
             </dl>
             <p>Map file extensions used for auto-matching uploads.</p>
             <div class="exts">
@@ -125,4 +132,4 @@
     </div>
   }
 </section>
-
+

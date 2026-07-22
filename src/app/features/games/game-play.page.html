@@ -1,0 +1,30 @@
+<section class="play">
+  <header class="play__bar">
+    <ajax-button variant="basic" icon="arrow_back" (clicked)="exit()">Exit</ajax-button>
+    <div class="play__title">
+      @if (game(); as g) {
+        <strong>{{ g.title }}</strong>
+        <span>{{ g.system }}</span>
+      } @else {
+        <strong>Play</strong>
+      }
+    </div>
+    <a class="play__detail-link" [routerLink]="['/games', game()?.id]">Details</a>
+  </header>
+
+  @if (error(); as err) {
+    <div class="play__error">
+      <p>{{ err }}</p>
+      <ajax-button variant="stroked" (clicked)="exit()">Back to game</ajax-button>
+    </div>
+  } @else if (loading()) {
+    <div class="play__loading">
+      <ajax-spinner />
+      <p>{{ status() }}</p>
+    </div>
+  }
+
+  <div class="play__stage" [class.play__stage--hidden]="!!error() || loading()">
+    <div #playerHost class="play__host"></div>
+  </div>
+</section>

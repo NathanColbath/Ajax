@@ -11,6 +11,7 @@ import {
   GameReview,
   GamesApi,
   ListsApi,
+  SystemsApi,
   UpdateGameRequest,
   UserGameListSummary,
 } from '../../api';
@@ -23,6 +24,10 @@ import {
   AjaxStatusChip,
 } from '../../shared/interactions';
 import { CoverCacheService } from '../../shared/media/cover-cache.service';
+import {
+  isExtensionPlayable,
+  resolveEmulatorJsCore,
+} from '../../shared/media/emulator-cores';
 import {
   AjaxButton,
   AjaxIcon,
@@ -60,6 +65,7 @@ import {
 export class GameDetailPage implements OnDestroy {
   private readonly api = inject(GamesApi);
   private readonly listsApi = inject(ListsApi);
+  private readonly systemsApi = inject(SystemsApi);
   private readonly coverCache = inject(CoverCacheService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -69,6 +75,7 @@ export class GameDetailPage implements OnDestroy {
 
   readonly loading = signal(true);
   readonly game = signal<GameDetail | null>(null);
+  readonly canPlay = signal(false);
   readonly isAdmin = this.session.isAtLeast('admin');
   readonly editing = signal(false);
   readonly saving = signal(false);
@@ -109,6 +116,7 @@ export class GameDetailPage implements OnDestroy {
         this.loadReviews(game.id);
         this.loadPublicFeedback(game.id);
         this.loadUserLists();
+        this.resolvePlayability(game);
       },
       error: () => this.loading.set(false),
     });
@@ -432,6 +440,14 @@ export class GameDetailPage implements OnDestroy {
     void this.router.navigate(['/lists']);
   }
 
+  play(): void {
+    const current = this.game();
+    if (!current || !this.canPlay()) {
+      return;
+    }
+    void this.router.navigate(['/games', current.id, 'play']);
+  }
+
   download(file?: { id: string; name: string }): void {
     const current = this.game();
     if (!current) {
@@ -572,5 +588,31 @@ export class GameDetailPage implements OnDestroy {
       URL.revokeObjectURL(url);
     }
     this.screenshotUrls.set({});
+  }
+
+  private resolvePlayability(game: GameDetail): void {
+    if (!game.files?.length) {
+      this.canPlay.set(false);
+      return;
+    }
+    this.systemsApi.list().subscribe({
+      next: (systems) => {
+        const system = systems.find(
+          (s) => s.shortName.toLowerCase() === game.system.toLowerCase(),
+        );
+        const core = resolveEmulatorJsCore(system?.emulatorJsCore, game.system || system?.shortName);
+        if (!core) {
+          this.canPlay.set(false);
+          return;
+        }
+        this.canPlay.set(game.files.some((f) => isExtensionPlayable(core, f.extension)));
+      },
+      error: () => {
+        const core = resolveEmulatorJsCore(null, game.system);
+        this.canPlay.set(
+          !!core && game.files.some((f) => isExtensionPlayable(core, f.extension)),
+        );
+      },
+    });
   }
 }

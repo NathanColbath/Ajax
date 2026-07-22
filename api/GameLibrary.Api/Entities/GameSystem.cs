@@ -18,6 +18,8 @@ public class GameSystem
     public string PreferredStoragePath { get; set; } = string.Empty;
     public Dictionary<string, string> MetadataProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public string EmulatorInfo { get; set; } = string.Empty;
+    /// <summary>EmulatorJS EJS_core id (e.g. nes, snes, gba). Empty = resolve from ShortName defaults.</summary>
+    public string EmulatorJsCore { get; set; } = string.Empty;
     public string Status { get; set; } = "active";
 }
 

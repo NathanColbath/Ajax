@@ -22,6 +22,83 @@ public static class SchemaPatches
         await EnsurePublicEnrichmentStateTableAsync(db, cancellationToken);
         await EnsureUserGameListsTablesAsync(db, cancellationToken);
         await EnsurePhysicalItemGameIdAsync(db, cancellationToken);
+        await EnsureSystemEmulatorJsCoreAsync(db, cancellationToken);
+        await EnsureSystemConfigColumnsAsync(db, cancellationToken);
+    }
+
+    private static async Task EnsureSystemEmulatorJsCoreAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        await EnsureColumnAsync(db, "Systems", "EmulatorJsCore", "TEXT NOT NULL DEFAULT ''", cancellationToken);
+
+        // Backfill empty cores from common short names (SQLite COLLATE NOCASE).
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'nes'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('nes', 'famicom');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'snes'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('snes', 'sfc');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'gb'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('gb', 'gbc');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'gba'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") = 'gba';
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'segaMD'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('genesis', 'md', 'megadrive');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'segaGG'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('gg', 'gamegear');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'segaMS'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('sms', 'mastersystem');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'atari2600'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('atari2600', 'a2600', '2600');
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'n64'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") = 'n64';
+            """,
+            cancellationToken);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Systems" SET "EmulatorJsCore" = 'vb'
+            WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
+              AND lower("ShortName") IN ('vb', 'virtualboy');
         await EnsureGameIsPhysicalOnlyAsync(db, cancellationToken);
         await EnsureSystemConfigColumnsAsync(db, cancellationToken);
     }

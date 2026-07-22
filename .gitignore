@@ -59,5 +59,7 @@ api/data/files/**
 .env
 .env.local
 
-# VPS package output
-/dist-package/
+# EmulatorJS WASM cores (run .\scripts\fetch-emulatorjs.ps1)
+/public/emulatorjs/data/cores/*.data
+/public/emulatorjs/data/cores/*.wasm
+

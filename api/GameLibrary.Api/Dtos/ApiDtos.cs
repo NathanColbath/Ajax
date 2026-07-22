@@ -147,7 +147,8 @@ public record GameSystemDto(
     string PreferredStoragePath,
     IReadOnlyDictionary<string, string> MetadataProviderIds,
     string EmulatorInfo,
-    string Status);
+    string Status,
+    string EmulatorJsCore = "");
 
 public record CreateGameSystemRequest(
     string Name,
@@ -163,7 +164,8 @@ public record CreateGameSystemRequest(
     string? PreferredStoragePath = null,
     IReadOnlyDictionary<string, string>? MetadataProviderIds = null,
     string? EmulatorInfo = null,
-    string? Status = null);
+    string? Status = null,
+    string? EmulatorJsCore = null);
 
 public record UpdateGameSystemRequest(
     string? Name = null,
@@ -178,7 +180,8 @@ public record UpdateGameSystemRequest(
     string? PreferredStoragePath = null,
     IReadOnlyDictionary<string, string>? MetadataProviderIds = null,
     string? EmulatorInfo = null,
-    string? Status = null);
+    string? Status = null,
+    string? EmulatorJsCore = null);
 
 public record AddExtensionRequest(string Extension);
 

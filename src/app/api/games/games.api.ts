@@ -258,11 +258,19 @@ export class GamesApi {
       saveBlobAsFile(blob, fileName);
       return mockDelay(undefined as void, 120);
     }
-    return this.http.getBlob(`/games/${gameId}/files/${fileId}/download`).pipe(
+    return this.getFileBlob(gameId, fileId).pipe(
       map((blob) => {
         saveBlobAsFile(blob, fileName);
       }),
     );
+  }
+
+  /** Authenticated ROM/file blob (for play cache or download). */
+  getFileBlob(gameId: string, fileId: string): Observable<Blob> {
+    if (this.mode.isMock()) {
+      return mockDelay(new Blob([`Mock ROM ${gameId}/${fileId}`], { type: 'application/octet-stream' }), 120);
+    }
+    return this.http.getBlob(`/games/${gameId}/files/${fileId}/download`);
   }
 
   deleteGame(id: string): Observable<void> {
