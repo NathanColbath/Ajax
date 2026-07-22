@@ -191,7 +191,13 @@
             >
               <div class="tile__art" [class.tile__art--empty]="!coverFor(item)">
                 @if (coverFor(item); as cover) {
-                  <img class="tile__cover" [src]="cover" [alt]="item.title + ' cover'" />
+                  <img
+                    class="tile__cover"
+                    [src]="cover"
+                    [alt]="item.title + ' cover'"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 } @else if (!item.hasArt) {
                   <span class="tile__badge">No art</span>
                 }
@@ -235,7 +241,7 @@
               [class.list__main--static]="!item.gameId"
             >
               @if (coverFor(item); as cover) {
-                <img class="list__thumb" [src]="cover" [alt]="" />
+                <img class="list__thumb" [src]="cover" [alt]="" loading="lazy" decoding="async" />
               } @else {
                 <span class="swatch" [style.background]="item.accent"></span>
               }

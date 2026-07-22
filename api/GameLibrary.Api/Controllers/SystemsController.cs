@@ -51,7 +51,7 @@ public class SystemsController(SystemsService systemsService) : ControllerBase
     [HttpGet("{id}/artwork/logo")]
     public async Task<ActionResult> GetLogo(string id, CancellationToken cancellationToken)
     {
-        var result = await systemsService.GetLogoAsync(id, cancellationToken);
+        var result = await systemsService.GetLogoAsync(id, Response, cancellationToken);
         return result is null ? NotFound() : result;
     }
 

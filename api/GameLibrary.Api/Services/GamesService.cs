@@ -457,6 +457,7 @@ public class GamesService(
         }
 
         fileStorage.TryDeleteFile(game.CoverPath);
+        artwork.DeleteGameCoverThumbs(id);
         game.CoverPath = string.Empty;
         game.HasArt = false;
         await db.SaveChangesAsync(cancellationToken);
@@ -482,7 +483,11 @@ public class GamesService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<FileStreamResult?> GetCoverAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<FileStreamResult?> GetCoverAsync(
+        string id,
+        string? size,
+        HttpResponse response,
+        CancellationToken cancellationToken = default)
     {
         var game = await db.Games.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
         if (game is null || string.IsNullOrWhiteSpace(game.CoverPath))
@@ -490,12 +495,22 @@ public class GamesService(
             return null;
         }
 
-        return fileDownload.OpenImage(game.CoverPath);
+        if (string.Equals(size, "thumb", StringComparison.OrdinalIgnoreCase))
+        {
+            var thumbPath = artwork.FindGameCoverThumbPath(id);
+            if (!string.IsNullOrWhiteSpace(thumbPath))
+            {
+                return fileDownload.OpenImage(thumbPath, response);
+            }
+        }
+
+        return fileDownload.OpenImage(game.CoverPath, response);
     }
 
     public async Task<FileStreamResult?> GetScreenshotAsync(
         string id,
         int index,
+        HttpResponse response,
         CancellationToken cancellationToken = default)
     {
         var game = await db.Games.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
@@ -504,7 +519,7 @@ public class GamesService(
             return null;
         }
 
-        return fileDownload.OpenImage(game.Screenshots[index]);
+        return fileDownload.OpenImage(game.Screenshots[index], response);
     }
 
     public async Task<GameDetailDto?> ToggleFavoriteAsync(string id, CancellationToken cancellationToken = default)

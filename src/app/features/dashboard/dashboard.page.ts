@@ -1,9 +1,10 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { DashboardApi, DashboardRecentGame, DashboardSnapshot, GamesApi } from '../../api';
+import { DashboardApi, DashboardRecentGame, DashboardSnapshot } from '../../api';
 import { SessionService } from '../../core/auth/session.service';
 import { AjaxEmptyState, AjaxStatusChip } from '../../shared/interactions';
+import { CoverCacheService } from '../../shared/media/cover-cache.service';
 import { AjaxButton, AjaxIcon, AjaxSpinner } from '../../shared/ui';
 
 @Component({
@@ -15,7 +16,7 @@ import { AjaxButton, AjaxIcon, AjaxSpinner } from '../../shared/ui';
 })
 export class DashboardPage {
   private readonly api = inject(DashboardApi);
-  private readonly gamesApi = inject(GamesApi);
+  private readonly coverCache = inject(CoverCacheService);
   private readonly session = inject(SessionService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -48,10 +49,6 @@ export class DashboardPage {
         },
         error: () => this.loading.set(false),
       });
-
-    this.destroyRef.onDestroy(() => {
-      this.revokeAllCovers();
-    });
   }
 
   coverFor(game: DashboardRecentGame): string | null {
@@ -59,9 +56,6 @@ export class DashboardPage {
   }
 
   private loadCovers(data: DashboardSnapshot): void {
-    this.revokeAllCovers();
-    this.coverUrls.set({});
-
     const seen = new Set<string>();
     const games = [...data.favorites, ...data.recent].filter((g) => {
       if (!g.hasArt || seen.has(g.id)) {
@@ -72,8 +66,8 @@ export class DashboardPage {
     });
 
     for (const game of games) {
-      this.gamesApi
-        .getCoverObjectUrl(game.id)
+      this.coverCache
+        .getCoverUrl(game.id, 'thumb')
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (url) => {
@@ -83,12 +77,6 @@ export class DashboardPage {
             this.coverUrls.update((current) => ({ ...current, [game.id]: url }));
           },
         });
-    }
-  }
-
-  private revokeAllCovers(): void {
-    for (const url of Object.values(this.coverUrls())) {
-      URL.revokeObjectURL(url);
     }
   }
 }

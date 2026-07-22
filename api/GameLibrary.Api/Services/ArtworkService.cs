@@ -1,3 +1,7 @@
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
+
 namespace GameLibrary.Api.Services;
 
 public class ArtworkService(FileStorageService fileStorage, ILogger<ArtworkService> logger)
@@ -8,6 +12,8 @@ public class ArtworkService(FileStorageService fileStorage, ILogger<ArtworkServi
     };
 
     private const int MaxDownloadAttempts = 4;
+    private const int CoverThumbMaxEdge = 320;
+    private const string CoverThumbBaseName = "cover-thumb";
 
     public async Task<string> SaveGameCoverAsync(
         string gameId,
@@ -15,7 +21,9 @@ public class ArtworkService(FileStorageService fileStorage, ILogger<ArtworkServi
         string originalFileName,
         CancellationToken cancellationToken = default)
     {
-        return await SaveNamedAsync("games", gameId, "cover", content, originalFileName, cancellationToken);
+        var path = await SaveNamedAsync("games", gameId, "cover", content, originalFileName, cancellationToken);
+        await TryGenerateCoverThumbAsync(path, cancellationToken);
+        return path;
     }
 
     public async Task<string> SaveGameScreenshotAsync(
@@ -47,7 +55,9 @@ public class ArtworkService(FileStorageService fileStorage, ILogger<ArtworkServi
         await using (stream)
         {
             var ext = GuessExtension(url, mediaType);
-            return await SaveNamedAsync("games", gameId, "cover", stream, $"cover{ext}", cancellationToken);
+            var path = await SaveNamedAsync("games", gameId, "cover", stream, $"cover{ext}", cancellationToken);
+            await TryGenerateCoverThumbAsync(path, cancellationToken);
+            return path;
         }
     }
 
@@ -150,10 +160,74 @@ public class ArtworkService(FileStorageService fileStorage, ILogger<ArtworkServi
             fileStorage.TryDeleteFile(existing);
         }
 
+        // Cover saves also replace any prior thumb variant.
+        if (string.Equals(baseName, "cover", StringComparison.OrdinalIgnoreCase))
+        {
+            DeleteCoverThumbs(dir);
+        }
+
         var path = Path.Combine(dir, $"{baseName}{ext}");
         await using var output = File.Create(path);
         await content.CopyToAsync(output, cancellationToken);
         return path;
+    }
+
+    /// <summary>
+    /// Deletes cover-thumb.* next to a game cover (used on cover replace/delete).
+    /// </summary>
+    public void DeleteGameCoverThumbs(string gameId)
+    {
+        var dir = fileStorage.GetArtworkDir("games", gameId);
+        DeleteCoverThumbs(dir);
+    }
+
+    public string? FindGameCoverThumbPath(string gameId)
+    {
+        var dir = fileStorage.GetArtworkDir("games", gameId);
+        return Directory.EnumerateFiles(dir, $"{CoverThumbBaseName}.*").FirstOrDefault();
+    }
+
+    private async Task TryGenerateCoverThumbAsync(string coverPath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(coverPath);
+            if (string.IsNullOrWhiteSpace(dir))
+            {
+                return;
+            }
+
+            DeleteCoverThumbs(dir);
+            var thumbPath = Path.Combine(dir, $"{CoverThumbBaseName}.webp");
+
+            await using var input = File.OpenRead(coverPath);
+            using var image = await Image.LoadAsync(input, cancellationToken);
+            image.Mutate(ctx => ctx.Resize(new ResizeOptions
+            {
+                Size = new Size(CoverThumbMaxEdge, CoverThumbMaxEdge),
+                Mode = ResizeMode.Max,
+            }));
+
+            await image.SaveAsWebpAsync(thumbPath, new WebpEncoder { Quality = 80 }, cancellationToken);
+            logger.LogDebug("Generated cover thumb at {ThumbPath}", thumbPath);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to generate cover thumb for {CoverPath}", coverPath);
+        }
+    }
+
+    private void DeleteCoverThumbs(string dir)
+    {
+        if (!Directory.Exists(dir))
+        {
+            return;
+        }
+
+        foreach (var existing in Directory.EnumerateFiles(dir, $"{CoverThumbBaseName}.*"))
+        {
+            fileStorage.TryDeleteFile(existing);
+        }
     }
 
     private static string NormalizeExtension(string extension)
