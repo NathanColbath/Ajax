@@ -168,6 +168,12 @@ public class UploadProcessingEngine(
             };
 
             db.GameFiles.Add(gameFile);
+
+            if (game.IsPhysicalOnly)
+            {
+                game.IsPhysicalOnly = false;
+            }
+
             await db.SaveChangesAsync(cancellationToken);
             await SetProgressAsync(job, 75, "processing", null, cancellationToken);
 

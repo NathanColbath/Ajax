@@ -20,7 +20,7 @@ public class GamesService(
         GamesQueryDto query,
         CancellationToken cancellationToken = default)
     {
-        var gamesQuery = db.Games.AsQueryable();
+        var gamesQuery = db.Games.Where(g => !g.IsPhysicalOnly);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -656,7 +656,11 @@ public class GamesService(
 
     public async Task<IReadOnlyList<string>> GetSystemNamesAsync(CancellationToken cancellationToken = default)
     {
-        var fromGames = await db.Games.Select(g => g.System).Distinct().ToListAsync(cancellationToken);
+        var fromGames = await db.Games
+            .Where(g => !g.IsPhysicalOnly)
+            .Select(g => g.System)
+            .Distinct()
+            .ToListAsync(cancellationToken);
         if (fromGames.Count > 0)
         {
             return fromGames.OrderBy(s => s).ToList();

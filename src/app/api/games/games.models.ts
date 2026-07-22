@@ -11,6 +11,7 @@ export interface GameSummary {
   downloadCount: number;
   publisher?: string;
   genres?: string[];
+  isPhysicalOnly?: boolean;
 }
 
 export interface GameFile {
