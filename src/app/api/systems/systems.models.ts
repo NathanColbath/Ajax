@@ -15,6 +15,8 @@ export interface GameSystem {
   preferredStoragePath: string;
   metadataProviderIds: Record<string, string>;
   emulatorInfo: string;
+  /** EmulatorJS EJS_core id (nes, snes, gba, …). */
+  emulatorJsCore: string;
   status: 'active' | 'hidden' | 'archived';
 }
 
@@ -33,6 +35,7 @@ export interface UpdateGameSystemRequest {
   preferredStoragePath?: string;
   metadataProviderIds?: Record<string, string>;
   emulatorInfo?: string;
+  emulatorJsCore?: string;
   status?: GameSystem['status'];
 }
 

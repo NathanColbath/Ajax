@@ -18,6 +18,7 @@ export const MOCK_SYSTEMS: GameSystem[] = [
     preferredStoragePath: '',
     metadataProviderIds: { libretro: 'Nintendo - Nintendo Entertainment System' },
     emulatorInfo: '',
+    emulatorJsCore: 'nes',
     status: 'active',
   },
   {
@@ -37,6 +38,7 @@ export const MOCK_SYSTEMS: GameSystem[] = [
     preferredStoragePath: '',
     metadataProviderIds: { libretro: 'Nintendo - Super Nintendo Entertainment System' },
     emulatorInfo: '',
+    emulatorJsCore: 'snes',
     status: 'active',
   },
   {
@@ -56,6 +58,7 @@ export const MOCK_SYSTEMS: GameSystem[] = [
     preferredStoragePath: '',
     metadataProviderIds: { libretro: 'Sega - Mega Drive - Genesis' },
     emulatorInfo: '',
+    emulatorJsCore: 'segaMD',
     status: 'active',
   },
   {
@@ -75,6 +78,7 @@ export const MOCK_SYSTEMS: GameSystem[] = [
     preferredStoragePath: '',
     metadataProviderIds: { libretro: 'Sony - PlayStation' },
     emulatorInfo: '',
+    emulatorJsCore: '',
     status: 'active',
   },
   {
@@ -94,6 +98,7 @@ export const MOCK_SYSTEMS: GameSystem[] = [
     preferredStoragePath: '',
     metadataProviderIds: { libretro: 'Nintendo - Game Boy' },
     emulatorInfo: '',
+    emulatorJsCore: 'gb',
     status: 'active',
   },
 ];

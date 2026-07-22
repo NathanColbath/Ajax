@@ -107,7 +107,8 @@ public static class EntityMappers
             system.PreferredStoragePath,
             system.MetadataProviderIds,
             system.EmulatorInfo,
-            system.Status);
+            system.Status,
+            system.EmulatorJsCore);
 
     public static PhysicalLocationDto ToDto(PhysicalLocation location) =>
         new(location.Id, location.Name, location.Type, location.Notes);

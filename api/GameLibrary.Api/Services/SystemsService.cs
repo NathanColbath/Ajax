@@ -41,6 +41,7 @@ public class SystemsService(
             PreferredStoragePath = request.PreferredStoragePath?.Trim() ?? string.Empty,
             MetadataProviderIds = ToProviderIds(request.MetadataProviderIds),
             EmulatorInfo = request.EmulatorInfo?.Trim() ?? string.Empty,
+            EmulatorJsCore = ResolveEmulatorJsCore(request.EmulatorJsCore, request.ShortName),
             Status = NormalizeStatus(request.Status),
         };
 
@@ -128,6 +129,11 @@ public class SystemsService(
         if (request.EmulatorInfo is not null)
         {
             system.EmulatorInfo = request.EmulatorInfo;
+        }
+
+        if (request.EmulatorJsCore is not null)
+        {
+            system.EmulatorJsCore = ResolveEmulatorJsCore(request.EmulatorJsCore, system.ShortName);
         }
 
         if (request.Status is not null)
@@ -275,6 +281,39 @@ public class SystemsService(
     {
         var value = (status ?? "active").Trim().ToLowerInvariant();
         return value is "active" or "hidden" or "archived" ? value : "active";
+    }
+
+    /// <summary>
+    /// Uses an explicit EmulatorJS core when provided; otherwise maps common ShortName values.
+    /// </summary>
+    internal static string ResolveEmulatorJsCore(string? requested, string shortName)
+    {
+        if (!string.IsNullOrWhiteSpace(requested))
+        {
+            return requested.Trim().ToLowerInvariant();
+        }
+
+        return DefaultCoreForShortName(shortName);
+    }
+
+    internal static string DefaultCoreForShortName(string? shortName)
+    {
+        var key = (shortName ?? string.Empty).Trim().ToLowerInvariant();
+        return key switch
+        {
+            "nes" or "famicom" => "nes",
+            "snes" or "super nintendo" or "sfc" => "snes",
+            "gb" or "game boy" or "gameboy" => "gb",
+            "gbc" or "game boy color" => "gb",
+            "gba" or "game boy advance" => "gba",
+            "genesis" or "megadrive" or "mega drive" or "md" => "segaMD",
+            "gg" or "game gear" or "gamegear" => "segaGG",
+            "sms" or "master system" or "mastersystem" => "segaMS",
+            "atari2600" or "a2600" or "2600" => "atari2600",
+            "n64" or "nintendo 64" => "n64",
+            "vb" or "virtual boy" or "virtualboy" => "vb",
+            _ => string.Empty,
+        };
     }
 
     private static Dictionary<string, string> ToProviderIds(IReadOnlyDictionary<string, string>? source)
