@@ -8,6 +8,11 @@ public class Game
     public string Region { get; set; } = string.Empty;
     public int Year { get; set; }
     public bool Owned { get; set; }
+    /// <summary>
+    /// True when this catalog row exists only to back a physical item (no digital library presence).
+    /// Cleared when ROM files are attached.
+    /// </summary>
+    public bool IsPhysicalOnly { get; set; }
     public bool HasArt { get; set; }
     public string Accent { get; set; } = string.Empty;
     public double Rating { get; set; }

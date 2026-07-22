@@ -166,6 +166,7 @@ public class PhysicalService(
                 Title = title,
                 System = system.ShortName,
                 Owned = true,
+                IsPhysicalOnly = true,
                 Accent = "#52687a",
                 MetadataSource = igdbId is not null ? "IGDB" : "Hasheous",
                 ExternalId = externalId ?? string.Empty,

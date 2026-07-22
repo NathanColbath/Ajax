@@ -22,7 +22,28 @@ public static class SchemaPatches
         await EnsurePublicEnrichmentStateTableAsync(db, cancellationToken);
         await EnsureUserGameListsTablesAsync(db, cancellationToken);
         await EnsurePhysicalItemGameIdAsync(db, cancellationToken);
+        await EnsureGameIsPhysicalOnlyAsync(db, cancellationToken);
         await EnsureSystemConfigColumnsAsync(db, cancellationToken);
+    }
+
+    private static async Task EnsureGameIsPhysicalOnlyAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        await EnsureColumnAsync(db, "Games", "IsPhysicalOnly", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
+
+        // Backfill: games with no files that are linked to at least one physical item.
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Games"
+            SET "IsPhysicalOnly" = 1
+            WHERE "IsPhysicalOnly" = 0
+              AND NOT EXISTS (
+                  SELECT 1 FROM "GameFiles" gf WHERE gf."GameId" = "Games"."Id"
+              )
+              AND EXISTS (
+                  SELECT 1 FROM "PhysicalItems" pi WHERE pi."GameId" = "Games"."Id"
+              );
+            """,
+            cancellationToken);
     }
 
     private static async Task EnsureSystemConfigColumnsAsync(AppDbContext db, CancellationToken cancellationToken)

@@ -34,6 +34,7 @@ public class ExportEngine(AppDbContext db, IOptions<StorageOptions> storageOptio
                 payload[scope] = scope switch
                 {
                     "games" => await db.Games
+                        .Where(g => !g.IsPhysicalOnly)
                         .Select(g => new { g.Id, g.Title, g.System, g.Region, g.Year, g.Owned, g.Rating })
                         .ToListAsync(cancellationToken),
                     "physical" => await db.PhysicalItems
