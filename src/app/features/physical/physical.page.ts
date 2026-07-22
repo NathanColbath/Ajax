@@ -4,7 +4,6 @@ import { PageEvent } from '@angular/material/paginator';
 import { RouterLink } from '@angular/router';
 import {
   GameSystem,
-  GamesApi,
   LocationType,
   LocationsApi,
   PhysicalApi,
@@ -20,6 +19,7 @@ import {
   AjaxEmptyState,
   AjaxFeedbackService,
 } from '../../shared/interactions';
+import { CoverCacheService } from '../../shared/media/cover-cache.service';
 import {
   AjaxButton,
   AjaxInput,
@@ -51,7 +51,7 @@ import {
 })
 export class PhysicalPage implements OnDestroy {
   private readonly api = inject(PhysicalApi);
-  private readonly gamesApi = inject(GamesApi);
+  private readonly coverCache = inject(CoverCacheService);
   private readonly locationsApi = inject(LocationsApi);
   private readonly systemsApi = inject(SystemsApi);
   private readonly feedback = inject(AjaxFeedbackService);
@@ -173,16 +173,14 @@ export class PhysicalPage implements OnDestroy {
         return;
       }
 
-      const loaded: Record<string, string> = {};
       const subs = page
         .filter((item) => item.hasArt && item.gameId)
         .map((item) =>
-          this.gamesApi.getCoverObjectUrl(item.gameId!).subscribe({
+          this.coverCache.getCoverUrl(item.gameId!, 'thumb').subscribe({
             next: (url) => {
               if (!url) {
                 return;
               }
-              loaded[item.id] = url;
               this.coverUrls.update((current) => ({ ...current, [item.id]: url }));
             },
           }),
@@ -192,23 +190,7 @@ export class PhysicalPage implements OnDestroy {
         for (const sub of subs) {
           sub.unsubscribe();
         }
-        for (const url of Object.values(loaded)) {
-          URL.revokeObjectURL(url);
-        }
-        this.coverUrls.update((current) => {
-          const next = { ...current };
-          for (const id of Object.keys(loaded)) {
-            delete next[id];
-          }
-          return next;
-        });
       });
-    });
-
-    this.destroyRef.onDestroy(() => {
-      for (const url of Object.values(this.coverUrls())) {
-        URL.revokeObjectURL(url);
-      }
     });
   }
 

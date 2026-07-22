@@ -23,6 +23,7 @@ import {
   AjaxFeedbackService,
   AjaxStatusChip,
 } from '../../shared/interactions';
+import { CoverCacheService } from '../../shared/media/cover-cache.service';
 import {
   isExtensionPlayable,
   resolveEmulatorJsCore,
@@ -65,6 +66,7 @@ export class GameDetailPage implements OnDestroy {
   private readonly api = inject(GamesApi);
   private readonly listsApi = inject(ListsApi);
   private readonly systemsApi = inject(SystemsApi);
+  private readonly coverCache = inject(CoverCacheService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly feedback = inject(AjaxFeedbackService);
@@ -121,7 +123,6 @@ export class GameDetailPage implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.revokeCover();
     this.revokeScreenshots();
   }
 
@@ -341,6 +342,7 @@ export class GameDetailPage implements OnDestroy {
     this.api.uploadCover(current.id, file).subscribe({
       next: (game) => {
         this.game.set(game);
+        this.coverCache.invalidate(game.id);
         this.loadCover(game);
         this.feedback.success('Cover uploaded');
       },
@@ -356,7 +358,7 @@ export class GameDetailPage implements OnDestroy {
     this.api.deleteCover(current.id).subscribe({
       next: (game) => {
         this.game.set(game);
-        this.revokeCover();
+        this.coverCache.invalidate(current.id);
         this.coverUrl.set(null);
         this.feedback.success('Cover removed');
       },
@@ -551,12 +553,11 @@ export class GameDetailPage implements OnDestroy {
   }
 
   private loadCover(game: GameDetail): void {
-    this.revokeCover();
     if (!game.hasArt) {
       this.coverUrl.set(null);
       return;
     }
-    this.api.getCoverObjectUrl(game.id).subscribe({
+    this.coverCache.getCoverUrl(game.id, 'full').subscribe({
       next: (url) => this.coverUrl.set(url),
       error: () => this.coverUrl.set(null),
     });
@@ -579,13 +580,6 @@ export class GameDetailPage implements OnDestroy {
           }
         },
       });
-    }
-  }
-
-  private revokeCover(): void {
-    const url = this.coverUrl();
-    if (url) {
-      URL.revokeObjectURL(url);
     }
   }
 

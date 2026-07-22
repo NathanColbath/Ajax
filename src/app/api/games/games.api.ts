@@ -148,8 +148,8 @@ export class GamesApi {
     return this.http.delete<GameDetail>(`/games/${id}/artwork/screenshots/${index}`);
   }
 
-  /** Returns an object URL for the cover (caller should revoke when done). */
-  getCoverObjectUrl(id: string): Observable<string | null> {
+  /** Returns an object URL for the cover (CoverCacheService owns revoke lifecycle). */
+  getCoverObjectUrl(id: string, size: 'thumb' | 'full' = 'full'): Observable<string | null> {
     if (this.mode.isMock()) {
       const blob = this.mockCoverBlobs.get(id);
       if (blob) {
@@ -158,7 +158,8 @@ export class GamesApi {
       const game = this.mockStore.find((g) => g.id === id);
       return mockDelay(game?.hasArt ? null : null, 80);
     }
-    return this.http.getBlob(`/games/${id}/artwork/cover`).pipe(
+    const params = size === 'thumb' ? { size: 'thumb' } : undefined;
+    return this.http.getBlob(`/games/${id}/artwork/cover`, params).pipe(
       map((blob) => URL.createObjectURL(blob)),
     );
   }

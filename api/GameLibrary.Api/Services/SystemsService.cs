@@ -182,7 +182,10 @@ public class SystemsService(
         return EntityMappers.ToDto(system);
     }
 
-    public async Task<FileStreamResult?> GetLogoAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<FileStreamResult?> GetLogoAsync(
+        string id,
+        HttpResponse response,
+        CancellationToken cancellationToken = default)
     {
         var system = await db.Systems.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         if (system is null || string.IsNullOrWhiteSpace(system.LogoPath))
@@ -190,7 +193,7 @@ public class SystemsService(
             return null;
         }
 
-        return fileDownload.OpenImage(system.LogoPath);
+        return fileDownload.OpenImage(system.LogoPath, response);
     }
 
     public async Task<IReadOnlyList<GameSystemDto>> ResolveByExtensionAsync(

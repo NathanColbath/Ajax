@@ -54,7 +54,7 @@ public class DashboardService(
             s => s.UserId == user.Id,
             cancellationToken);
 
-        var libraryGames = await db.Games.CountAsync(cancellationToken);
+        var libraryGames = await db.Games.CountAsync(g => !g.IsPhysicalOnly, cancellationToken);
         var physicalGames = await db.PhysicalItems.CountAsync(cancellationToken);
         var systems = await db.Systems.CountAsync(cancellationToken);
         var storage = fileStorage.GetUsageSnapshot();

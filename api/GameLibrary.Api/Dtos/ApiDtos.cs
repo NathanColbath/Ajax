@@ -36,7 +36,8 @@ public record GameSummaryDto(
     double Rating,
     int DownloadCount,
     string Publisher = "",
-    IReadOnlyList<string>? Genres = null);
+    IReadOnlyList<string>? Genres = null,
+    bool IsPhysicalOnly = false);
 
 public record GameFileDto(
     string Id,
@@ -73,7 +74,8 @@ public record GameDetailDto(
     bool Favorite,
     string PlayStatus,
     int? MyRating = null,
-    string? MyReviewBody = null);
+    string? MyReviewBody = null,
+    bool IsPhysicalOnly = false);
 
 public record UpsertGameReviewRequest(int Rating, string? Body = null);
 

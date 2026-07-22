@@ -24,7 +24,8 @@ public static class EntityMappers
             game.Rating,
             game.DownloadCount,
             game.Publisher,
-            game.Genres);
+            game.Genres,
+            game.IsPhysicalOnly);
 
     public static GameFileDto ToDto(GameFile file) =>
         new(file.Id, file.Name, file.SizeLabel, file.Extension);
@@ -72,7 +73,8 @@ public static class EntityMappers
             favorite,
             playStatus,
             myReview?.Rating,
-            myReview?.Body);
+            myReview?.Body,
+            game.IsPhysicalOnly);
     }
 
     public static GameReviewDto ToDto(GameReview review, string? currentUserId) =>

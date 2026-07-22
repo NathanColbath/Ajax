@@ -15,7 +15,6 @@ import {
 import {
   GameListDownloadJob,
   GameSummary,
-  GamesApi,
   ListsApi,
   UserGameListDetail,
   UserGameListGame,
@@ -26,6 +25,7 @@ import {
   AjaxEmptyState,
   AjaxFeedbackService,
 } from '../../shared/interactions';
+import { CoverCacheService } from '../../shared/media/cover-cache.service';
 import { AjaxButton, AjaxDialog, AjaxInput, AjaxSpinner } from '../../shared/ui';
 import { AddGameDialog } from './add-game.dialog';
 
@@ -38,7 +38,7 @@ import { AddGameDialog } from './add-game.dialog';
 })
 export class ListDetailPage {
   private readonly listsApi = inject(ListsApi);
-  private readonly gamesApi = inject(GamesApi);
+  private readonly coverCache = inject(CoverCacheService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly feedback = inject(AjaxFeedbackService);
@@ -99,16 +99,14 @@ export class ListDetailPage {
     effect((onCleanup) => {
       const detail = this.list();
       const games = detail?.games ?? [];
-      const loaded: Record<string, string> = {};
       const subs = games
         .filter((game) => !!game.hasArt)
         .map((game) =>
-          this.gamesApi.getCoverObjectUrl(game.id).subscribe({
+          this.coverCache.getCoverUrl(game.id, 'thumb').subscribe({
             next: (url) => {
               if (!url) {
                 return;
               }
-              loaded[game.id] = url;
               this.coverUrls.update((current) => ({ ...current, [game.id]: url }));
             },
           }),
@@ -118,24 +116,11 @@ export class ListDetailPage {
         for (const sub of subs) {
           sub.unsubscribe();
         }
-        for (const url of Object.values(loaded)) {
-          URL.revokeObjectURL(url);
-        }
-        this.coverUrls.update((current) => {
-          const next = { ...current };
-          for (const id of Object.keys(loaded)) {
-            delete next[id];
-          }
-          return next;
-        });
       });
     });
 
     this.destroyRef.onDestroy(() => {
       this.downloadSub?.unsubscribe();
-      for (const url of Object.values(this.coverUrls())) {
-        URL.revokeObjectURL(url);
-      }
     });
   }
 
