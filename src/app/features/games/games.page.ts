@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { GamesApi, GameSummary } from '../../api';
 import { LibrarySettingsService } from '../../core/config/library-settings.service';
 import { AjaxEmptyState } from '../../shared/interactions';
+import { CoverCacheService } from '../../shared/media/cover-cache.service';
 import {
   AjaxButton,
   AjaxInput,
@@ -38,6 +39,7 @@ import { Subject, switchMap, catchError, of, distinctUntilChanged, timer, map } 
 })
 export class GamesPage {
   private readonly api = inject(GamesApi);
+  private readonly coverCache = inject(CoverCacheService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly librarySettings = inject(LibrarySettingsService);
   private readonly searchInput$ = new Subject<string>();
@@ -134,16 +136,14 @@ export class GamesPage {
         return;
       }
 
-      const loaded: Record<string, string> = {};
       const subs = page
         .filter((game) => game.hasArt)
         .map((game) =>
-          this.api.getCoverObjectUrl(game.id).subscribe({
+          this.coverCache.getCoverUrl(game.id, 'thumb').subscribe({
             next: (url) => {
               if (!url) {
                 return;
               }
-              loaded[game.id] = url;
               this.coverUrls.update((current) => ({ ...current, [game.id]: url }));
             },
           }),
@@ -153,23 +153,7 @@ export class GamesPage {
         for (const sub of subs) {
           sub.unsubscribe();
         }
-        for (const url of Object.values(loaded)) {
-          URL.revokeObjectURL(url);
-        }
-        this.coverUrls.update((current) => {
-          const next = { ...current };
-          for (const id of Object.keys(loaded)) {
-            delete next[id];
-          }
-          return next;
-        });
       });
-    });
-
-    this.destroyRef.onDestroy(() => {
-      for (const url of Object.values(this.coverUrls())) {
-        URL.revokeObjectURL(url);
-      }
     });
   }
 

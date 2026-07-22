@@ -80,7 +80,13 @@
             >
               <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
                 @if (coverFor(game); as cover) {
-                  <img class="tile__cover" [src]="cover" [alt]="game.title + ' cover'" />
+                  <img
+                    class="tile__cover"
+                    [src]="cover"
+                    [alt]="game.title + ' cover'"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 } @else if (!game.hasArt) {
                   <span class="tile__badge">No art</span>
                 }

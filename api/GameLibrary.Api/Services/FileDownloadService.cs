@@ -21,7 +21,7 @@ public class FileDownloadService(FileStorageService fileStorage)
         };
     }
 
-    public FileStreamResult? OpenImage(string? storagePath)
+    public FileStreamResult? OpenImage(string? storagePath, HttpResponse? response = null)
     {
         if (!fileStorage.TryOpenRead(storagePath, out var stream) || stream is null)
         {
@@ -32,6 +32,13 @@ public class FileDownloadService(FileStorageService fileStorage)
         if (!ContentTypes.TryGetContentType(fileName, out var contentType))
         {
             contentType = "application/octet-stream";
+        }
+
+        if (response is not null && !string.IsNullOrWhiteSpace(storagePath) && File.Exists(storagePath))
+        {
+            var info = new FileInfo(Path.GetFullPath(storagePath));
+            response.Headers.CacheControl = "private, max-age=86400";
+            response.Headers.ETag = $"\"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}\"";
         }
 
         return new FileStreamResult(stream, contentType)

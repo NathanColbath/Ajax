@@ -66,7 +66,13 @@
           <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
             <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
               @if (coverFor(game); as cover) {
-                <img class="tile__cover" [src]="cover" [alt]="game.title + ' cover'" />
+                <img
+                  class="tile__cover"
+                  [src]="cover"
+                  [alt]="game.title + ' cover'"
+                  loading="lazy"
+                  decoding="async"
+                />
               } @else if (!game.hasArt) {
                 <span class="tile__badge">No art</span>
               }
@@ -92,7 +98,7 @@
         @for (game of pagedGames(); track game.id) {
           <a class="list__row" [routerLink]="['/games', game.id]">
             @if (coverFor(game); as cover) {
-              <img class="list__thumb" [src]="cover" [alt]="" />
+              <img class="list__thumb" [src]="cover" [alt]="" loading="lazy" decoding="async" />
             } @else {
               <span class="swatch" [style.background]="game.accent"></span>
             }

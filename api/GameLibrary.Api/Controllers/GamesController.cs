@@ -50,9 +50,12 @@ public class GamesController(GamesService gamesService) : ControllerBase
     }
 
     [HttpGet("{id}/artwork/cover")]
-    public async Task<ActionResult> GetCover(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult> GetCover(
+        string id,
+        [FromQuery] string? size,
+        CancellationToken cancellationToken)
     {
-        var result = await gamesService.GetCoverAsync(id, cancellationToken);
+        var result = await gamesService.GetCoverAsync(id, size, Response, cancellationToken);
         return result is null ? NotFound() : result;
     }
 
@@ -90,7 +93,7 @@ public class GamesController(GamesService gamesService) : ControllerBase
     [HttpGet("{id}/artwork/screenshots/{index:int}")]
     public async Task<ActionResult> GetScreenshot(string id, int index, CancellationToken cancellationToken)
     {
-        var result = await gamesService.GetScreenshotAsync(id, index, cancellationToken);
+        var result = await gamesService.GetScreenshotAsync(id, index, Response, cancellationToken);
         return result is null ? NotFound() : result;
     }
 
