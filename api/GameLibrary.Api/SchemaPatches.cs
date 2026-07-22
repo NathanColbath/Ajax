@@ -99,6 +99,8 @@ public static class SchemaPatches
             UPDATE "Systems" SET "EmulatorJsCore" = 'vb'
             WHERE ("EmulatorJsCore" IS NULL OR "EmulatorJsCore" = '')
               AND lower("ShortName") IN ('vb', 'virtualboy');
+            """,
+            cancellationToken);
         await EnsureGameIsPhysicalOnlyAsync(db, cancellationToken);
         await EnsureSystemConfigColumnsAsync(db, cancellationToken);
     }

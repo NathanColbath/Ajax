@@ -31,7 +31,8 @@ try {
   $api = if ($Tag -eq "latest") {
     "https://api.github.com/repos/EmulatorJS/EmulatorJS/releases/latest"
   } else {
-    "https://api.github.com/repos/EmulatorJS/EmulatorJS/releases/tags/$Tag"
+    $tagRef = if ($Tag.StartsWith("v")) { $Tag } else { "v$Tag" }
+    "https://api.github.com/repos/EmulatorJS/EmulatorJS/releases/tags/$tagRef"
   }
 
   $release = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "retrojax-fetch-emulatorjs" }
@@ -71,6 +72,27 @@ try {
   }
   New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
   Copy-Item -Path $dataSrc.FullName -Destination (Join-Path $OutDir "data") -Recurse -Force
+
+  # Source zipball often omits minified runtime; pull from EmulatorJS CDN.
+  $dataDest = Join-Path $OutDir "data"
+  $minZip = Join-Path $tmp "emulator.min.zip"
+  $minUrl = "https://cdn.emulatorjs.org/stable/data/emulator.min.zip"
+  Write-Host "Downloading emulator.min.js/css from CDN..." -ForegroundColor DarkGray
+  Invoke-WebRequest -Uri $minUrl -OutFile $minZip -UseBasicParsing
+  $minExtract = Join-Path $tmp "emulator-min"
+  New-Item -ItemType Directory -Path $minExtract -Force | Out-Null
+  Expand-Archive -Path $minZip -DestinationPath $minExtract -Force
+  Get-ChildItem $minExtract -Recurse -File |
+    Where-Object { $_.Name -match '^emulator\.min\.(js|css)$' } |
+    ForEach-Object {
+      Copy-Item $_.FullName -Destination $dataDest -Force
+      Write-Host "  copied $($_.Name)" -ForegroundColor DarkGray
+    }
+  foreach ($required in @("emulator.min.js", "emulator.min.css", "loader.js")) {
+    if (-not (Test-Path (Join-Path $dataDest $required))) {
+      throw "Missing required file after fetch: data/$required"
+    }
+  }
 
   Set-Content -Path (Join-Path $OutDir "VERSION") -Value $resolvedTag -NoNewline
 
