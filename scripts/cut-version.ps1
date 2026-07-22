@@ -164,8 +164,12 @@ if ($actionsUrl) {
   Write-Host "  Actions:     $actionsUrl"
 }
 Write-Host ""
+Write-Host "After Release succeeds, the remote $branch branch is deleted automatically;" -ForegroundColor DarkGray
+Write-Host "the $tag tag and GHCR images remain. Deploy runs from the release (or re-run Deploy)." -ForegroundColor DarkGray
+Write-Host ""
 Write-Host "After Release succeeds, deploy (auto if secrets set) or on VPS:" -ForegroundColor Yellow
 Write-Host ('  cd /root/retrojax; ./scripts/deploy-vps.sh ' + $Version)
 Write-Host ""
-Write-Host "You are on branch $branch. Switch back when ready:" -ForegroundColor DarkGray
+Write-Host "You are still on local $branch. Switch back when ready:" -ForegroundColor DarkGray
 Write-Host "  git checkout $BaseBranch"
+Write-Host "  git fetch --prune   # drop stale remote-tracking version/* refs"

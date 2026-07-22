@@ -145,3 +145,25 @@ jobs:
     with:
       version: ${{ needs.release.outputs.version }}
     secrets: inherit
+
+  cleanup:
+    name: Delete version branch
+    needs: release
+    runs-on: ubuntu-latest
+    if: success()
+    permissions:
+      contents: write
+    steps:
+      - name: Delete remote version branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [[ ! "$BRANCH" =~ ^version/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Refusing to delete unexpected branch: $BRANCH"
+            exit 1
+          fi
+          echo "Deleting remote branch $BRANCH (tag/release remains)"
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${BRANCH}"
+          echo "Deleted $BRANCH"

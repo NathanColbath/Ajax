@@ -22,7 +22,8 @@ npm run cut-version -- 0.1.0
 The script updates [`src/app/core/version.ts`](../src/app/core/version.ts) (shown in the nav footer as `vX.Y.Z`) and `package.json`, commits that bump on the version branch, then pushes.
 
 3. [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds/pushes images and creates GitHub Release `v0.1.0`
-4. The same Release run then calls [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (SSH → pull → `up -d`)
+4. After a successful Release job, the workflow deletes the remote `version/X.Y.Z` branch (the `vX.Y.Z` tag and GHCR images remain)
+5. The same Release run then calls [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (SSH → pull → `up -d`)
 
 > Note: GitHub does not start other workflows from events created with `GITHUB_TOKEN`, so Deploy is invoked via `workflow_call` from Release rather than listening only to `release: published`.
 
