@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ExportsService>();
         services.AddScoped<GameListsService>();
         services.AddScoped<UsersService>();
+        services.AddScoped<UserPreferencesService>();
         services.AddScoped<ConfigService>();
         services.AddScoped<DashboardService>();
         services.AddScoped<LogsService>();

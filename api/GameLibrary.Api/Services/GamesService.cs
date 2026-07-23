@@ -589,7 +589,8 @@ public class GamesService(
         if (game is not null)
         {
             game.DownloadCount++;
-            await db.SaveChangesAsync(cancellationToken);
+            await TouchLastPlayedAsync(gameId, cancellationToken);
+            await SaveChangesHandlingUserGameStateConflictAsync(cancellationToken);
 
             await eventLogger.WriteAsync(new AppLogEvent
             {
@@ -603,6 +604,94 @@ public class GamesService(
 
         return fileDownload.OpenAttachment(file.StoragePath, file.Name);
     }
+
+    public async Task<bool> RecordPlayAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var exists = await db.Games.AnyAsync(g => g.Id == id, cancellationToken);
+        if (!exists)
+        {
+            return false;
+        }
+
+        await TouchLastPlayedAsync(id, cancellationToken);
+        await SaveChangesHandlingUserGameStateConflictAsync(cancellationToken);
+        return true;
+    }
+
+    private async Task TouchLastPlayedAsync(string gameId, CancellationToken cancellationToken)
+    {
+        var user = await authService.EnsureUserAsync(cancellationToken);
+        if (user is null)
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var state = await db.UserGameStates
+            .FirstOrDefaultAsync(s => s.UserId == user.Id && s.GameId == gameId, cancellationToken);
+
+        if (state is null)
+        {
+            state = db.UserGameStates.Local
+                .FirstOrDefault(s => s.UserId == user.Id && s.GameId == gameId);
+        }
+
+        if (state is null)
+        {
+            var owned = await db.Games
+                .Where(g => g.Id == gameId)
+                .Select(g => g.Owned)
+                .FirstOrDefaultAsync(cancellationToken);
+            db.UserGameStates.Add(new UserGameState
+            {
+                UserId = user.Id,
+                GameId = gameId,
+                Favorite = false,
+                PlayStatus = owned ? "unplayed" : "wishlist",
+                LastPlayedAt = now,
+            });
+        }
+        else
+        {
+            state.LastPlayedAt = now;
+        }
+    }
+
+    /// <summary>
+    /// Play + download can race and both try to insert the same UserGameState row.
+    /// </summary>
+    private async Task SaveChangesHandlingUserGameStateConflictAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException) when (HasPendingUserGameStateInserts())
+        {
+            foreach (var entry in db.ChangeTracker.Entries<UserGameState>()
+                .Where(e => e.State == EntityState.Added)
+                .ToList())
+            {
+                var pending = entry.Entity;
+                var lastPlayed = pending.LastPlayedAt ?? DateTimeOffset.UtcNow;
+                entry.State = EntityState.Detached;
+
+                var existing = await db.UserGameStates
+                    .FirstOrDefaultAsync(
+                        s => s.UserId == pending.UserId && s.GameId == pending.GameId,
+                        cancellationToken);
+                if (existing is not null)
+                {
+                    existing.LastPlayedAt = lastPlayed;
+                }
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private bool HasPendingUserGameStateInserts() =>
+        db.ChangeTracker.Entries<UserGameState>().Any(e => e.State == EntityState.Added);
 
     public async Task<DeleteStatus> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {

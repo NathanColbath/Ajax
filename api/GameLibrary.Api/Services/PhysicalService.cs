@@ -171,6 +171,7 @@ public class PhysicalService(
                 MetadataSource = igdbId is not null ? "IGDB" : "Hasheous",
                 ExternalId = externalId ?? string.Empty,
                 Year = yearFromSearch ?? 0,
+                CreatedAt = DateTimeOffset.UtcNow,
             };
             db.Games.Add(game);
             createdNew = true;

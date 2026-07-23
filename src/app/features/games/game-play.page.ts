@@ -81,33 +81,40 @@ export class GamePlayPage implements OnDestroy {
         }
 
         this.status.set(`Downloading ${file.name}…`);
-        this.emulator.prepareRom(game.id, file.id).subscribe({
-          next: (blobUrl) => {
-            this.status.set('Starting emulator…');
-            const host = this.playerHost.nativeElement;
-            this.emulator
-              .launch({
-                playerHost: host,
-                core,
-                gameUrl: blobUrl,
-                gameName: game.title,
-              })
-              .subscribe({
-                next: () => {
-                  this.loading.set(false);
-                  this.status.set('Playing');
-                },
-                error: (err) => {
-                  this.loading.set(false);
-                  this.error.set(apiErrorMessage(err, 'Emulator failed to start'));
-                },
-              });
-          },
-          error: (err) => {
-            this.loading.set(false);
-            this.error.set(apiErrorMessage(err, 'Failed to download ROM'));
-          },
-        });
+        // Record play before ROM download so the two calls do not race on UserGameState insert.
+        this.gamesApi
+          .recordPlay(game.id)
+          .pipe(
+            catchError(() => of(undefined)),
+            switchMap(() => this.emulator.prepareRom(game.id, file.id)),
+          )
+          .subscribe({
+            next: (blobUrl) => {
+              this.status.set('Starting emulator…');
+              const host = this.playerHost.nativeElement;
+              this.emulator
+                .launch({
+                  playerHost: host,
+                  core,
+                  gameUrl: blobUrl,
+                  gameName: game.title,
+                })
+                .subscribe({
+                  next: () => {
+                    this.loading.set(false);
+                    this.status.set('Playing');
+                  },
+                  error: (err) => {
+                    this.loading.set(false);
+                    this.error.set(apiErrorMessage(err, 'Emulator failed to start'));
+                  },
+                });
+            },
+            error: (err) => {
+              this.loading.set(false);
+              this.error.set(apiErrorMessage(err, 'Failed to download ROM'));
+            },
+          });
       });
   }
 

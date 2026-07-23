@@ -1,21 +1,90 @@
 <section class="settings">
-  <header>
-    <h2>Settings</h2>
-    <p class="lede">Preferences for your account. System options live under Config.</p>
+  <header class="settings__header">
+    <div>
+      <h2>Settings</h2>
+      <p class="lede">Preferences for your account. System options live under Config.</p>
+    </div>
+    <div class="settings__actions">
+      @if (savedFlash()) {
+        <span class="settings__saved">Saved</span>
+      }
+      <ajax-button
+        variant="flat"
+        color="primary"
+        [disabled]="loading() || saving()"
+        (clicked)="save()"
+      >
+        {{ saving() ? 'Saving…' : 'Save preferences' }}
+      </ajax-button>
+    </div>
   </header>
 
-  <ajax-accordion>
-    <ajax-expansion title="Notifications" description="How we reach you" [expanded]="true">
-      <ajax-slide-toggle [(ngModel)]="emailDigest" name="emailDigest">
-        Weekly collection digest
-      </ajax-slide-toggle>
-    </ajax-expansion>
+  @if (loading()) {
+    <div class="settings__loading"><ajax-spinner /></div>
+  } @else {
+    <ajax-accordion>
+      <ajax-expansion title="Notifications" description="How we reach you">
+        <ajax-slide-toggle [(ngModel)]="emailDigest" name="emailDigest">
+          Weekly collection digest
+        </ajax-slide-toggle>
+        <p class="muted">Coming soon — this toggle is not saved yet.</p>
+      </ajax-expansion>
 
-    <ajax-expansion title="Interface" description="Personal layout">
-      <ajax-slide-toggle [(ngModel)]="compactNav" name="compactNav">
-        Prefer compact navigation labels
-      </ajax-slide-toggle>
-      <p class="muted">Theme follows the shared Material azure/neutral light palette.</p>
-    </ajax-expansion>
-  </ajax-accordion>
+      <ajax-expansion title="Dashboard" description="Show, hide, and reorder home sections" [expanded]="true">
+        <ul class="pref-list">
+          @for (row of dashboardRows(); track row.id; let i = $index) {
+            <li class="pref-row">
+              <div class="pref-row__main">
+                <span class="pref-row__label">{{ row.label }}</span>
+                <ajax-slide-toggle
+                  [ngModel]="row.visible"
+                  (ngModelChange)="setSectionVisible(row.id, $event)"
+                  [name]="'dash-' + row.id"
+                >
+                  Visible
+                </ajax-slide-toggle>
+              </div>
+              <div class="pref-row__move">
+                <ajax-button
+                  variant="icon"
+                  icon="arrow_upward"
+                  ariaLabel="Move up"
+                  [disabled]="i === 0"
+                  (clicked)="moveUp(i)"
+                />
+                <ajax-button
+                  variant="icon"
+                  icon="arrow_downward"
+                  ariaLabel="Move down"
+                  [disabled]="i === dashboardRows().length - 1"
+                  (clicked)="moveDown(i)"
+                />
+              </div>
+            </li>
+          }
+        </ul>
+      </ajax-expansion>
+
+      <ajax-expansion title="Navigation" description="Choose primary sidebar items vs More">
+        <p class="muted">
+          Items in More stay available from the sidebar overflow. Dashboard and Settings can move to More
+          but remain reachable there.
+        </p>
+        <ul class="pref-list">
+          @for (item of configurableNavItems(); track item.path) {
+            <li class="pref-row pref-row--nav">
+              <span class="pref-row__label">{{ item.label }}</span>
+              <ajax-slide-toggle
+                [ngModel]="isNavInMore(item.path)"
+                (ngModelChange)="setNavInMore(item.path, $event)"
+                [name]="'nav-' + item.path"
+              >
+                In More menu
+              </ajax-slide-toggle>
+            </li>
+          }
+        </ul>
+      </ajax-expansion>
+    </ajax-accordion>
+  }
 </section>

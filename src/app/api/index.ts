@@ -4,6 +4,7 @@ export type {
   DashboardStats,
   DashboardAttentionItem,
   DashboardRecentGame,
+  DashboardSystemTile,
 } from './dashboard/dashboard.models';
 
 export { GamesApi } from './games/games.api';
@@ -47,7 +48,9 @@ export type {
 } from './lists/lists.models';
 
 export { UsersApi } from './users/users.api';
+export { UserPreferencesApi } from './users/user-preferences.api';
 export type { LibraryUser, UserRole } from './users/users.models';
+export type { UserPreferences, UpdateUserPreferencesRequest } from './users/user-preferences.models';
 
 export { ConfigApi } from './config/config.api';
 export type {

@@ -167,6 +167,13 @@ public class GamesController(GamesService gamesService) : ControllerBase
         return game is null ? NotFound() : Ok(game);
     }
 
+    [HttpPost("{id}/play")]
+    public async Task<IActionResult> RecordPlay(string id, CancellationToken cancellationToken)
+    {
+        var ok = await gamesService.RecordPlayAsync(id, cancellationToken);
+        return ok ? NoContent() : NotFound();
+    }
+
     [HttpGet("{id}/reviews")]
     public async Task<ActionResult<IReadOnlyList<GameReviewDto>>> ListReviews(
         string id,

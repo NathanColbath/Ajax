@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, effect, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { GamesApi, GameSummary } from '../../api';
 import { LibrarySettingsService } from '../../core/config/library-settings.service';
 import { AjaxEmptyState } from '../../shared/interactions';
@@ -42,6 +42,7 @@ export class GamesPage {
   private readonly coverCache = inject(CoverCacheService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly librarySettings = inject(LibrarySettingsService);
+  private readonly route = inject(ActivatedRoute);
   private readonly searchInput$ = new Subject<string>();
   private readonly reload$ = new Subject<void>();
 
@@ -83,6 +84,15 @@ export class GamesPage {
     });
 
     this.api.systems().subscribe((systems) => this.systems.set(systems));
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const system = params.get('system')?.trim();
+      const next = system || undefined;
+      if (this.selectedSystem() !== next) {
+        this.selectedSystem.set(next);
+        this.reload$.next();
+      }
+    });
 
     this.reload$
       .pipe(

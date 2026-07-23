@@ -61,6 +61,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Tags).HasConversion(stringListConverter, stringListComparer);
             entity.Property(e => e.Languages).HasConversion(stringListConverter, stringListComparer);
             entity.Property(e => e.Screenshots).HasConversion(stringListConverter, stringListComparer);
+            entity.Property(e => e.CreatedAt).HasConversion(
+                v => v.ToString("O"),
+                v => string.IsNullOrWhiteSpace(v)
+                    ? DateTimeOffset.UtcNow
+                    : DateTimeOffset.Parse(v, null, System.Globalization.DateTimeStyles.RoundtripKind));
         });
 
         modelBuilder.Entity<GameFile>(entity =>
@@ -75,6 +80,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<UserGameState>(entity =>
         {
             entity.HasKey(e => new { e.UserId, e.GameId });
+            entity.Property(e => e.LastPlayedAt).HasConversion(
+                v => v.HasValue ? v.Value.ToString("O") : null,
+                v => string.IsNullOrWhiteSpace(v)
+                    ? null
+                    : DateTimeOffset.Parse(v, null, System.Globalization.DateTimeStyles.RoundtripKind));
             entity.HasOne(e => e.User)
                 .WithMany(u => u.GameStates)
                 .HasForeignKey(e => e.UserId)

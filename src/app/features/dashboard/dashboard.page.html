@@ -5,142 +5,264 @@
     <header class="dash__intro">
       <div class="dash__header">
         <h2>Welcome back, {{ greetingName() }}</h2>
-        <p class="dash__lede">Personal activity on top of the shared digital library.</p>
+        <p class="dash__lede">Pick up where you left off in your collection.</p>
       </div>
       <div class="dash__quick">
         <a routerLink="/games">
-          <ajax-button variant="flat" color="primary" icon="sports_esports">Browse library</ajax-button>
+          <ajax-button variant="flat" color="primary" icon="sports_esports">Browse Library</ajax-button>
         </a>
-        <a routerLink="/uploads">
-          <ajax-button variant="stroked" icon="upload_file">Upload</ajax-button>
-        </a>
-        <a routerLink="/systems">
-          <ajax-button variant="stroked" icon="devices">Systems</ajax-button>
+        <a routerLink="/lists">
+          <ajax-button variant="stroked" icon="playlist_play">My Lists</ajax-button>
         </a>
       </div>
     </header>
 
-    <div class="dash__stats">
-      <a class="stat" routerLink="/" fragment="favorites">
-        <ajax-icon name="star" />
-        <strong>{{ data.stats.myFavorites }}</strong>
-        <span>Your favorites</span>
-      </a>
-      <article class="stat">
-        <ajax-icon name="download" />
-        <strong>{{ data.stats.myDownloads }}</strong>
-        <span>Your downloads</span>
-      </article>
-      <a class="stat" routerLink="/games">
-        <ajax-icon name="sports_esports" />
-        <strong>{{ data.stats.libraryGames }}</strong>
-        <span>Shared library titles</span>
-      </a>
-      <a class="stat" routerLink="/physical">
-        <ajax-icon name="inventory_2" />
-        <strong>{{ data.stats.physicalGames }}</strong>
-        <span>Physical items</span>
-      </a>
-    </div>
-
-    @if (isAdmin && data.attention.length) {
-      <section class="attention">
-        <div class="attention__head">
-          <h3>Needs your attention</h3>
-          <span class="attention__summary">Personal + library follow-ups</span>
-        </div>
-        <div class="attention__chips">
-          @for (item of data.attention; track item.id) {
-            <a class="attention__item" [routerLink]="item.link">
-              <ajax-status-chip [label]="item.count + ' · ' + item.label" [status]="item.tone" />
-            </a>
-          }
-        </div>
-      </section>
-    }
-
-    <section class="shelf" id="favorites">
-      <div class="shelf__head">
-        <h3>Your favorites</h3>
-        <div class="shelf__meta">
-          @if (data.favorites.length > 0) {
-            <span class="shelf__summary">{{ data.favorites.length }} pinned</span>
-          }
-          <a routerLink="/games">
-            <ajax-button variant="basic" icon="arrow_forward">Shared library</ajax-button>
-          </a>
-        </div>
-      </div>
-
-      @if (data.favorites.length === 0) {
-        <ajax-empty-state
-          icon="star"
-          title="No favorites yet"
-          description="Star titles in the shared library to pin them here."
-        />
-      } @else {
-        <div class="shelf__row">
-          @for (game of data.favorites; track game.id) {
-            <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
-              <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
-                @if (coverFor(game); as cover) {
-                  <img
-                    class="tile__cover"
-                    [src]="cover"
-                    [alt]="game.title + ' cover'"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                }
-              </div>
-              <div class="tile__body">
-                <span class="tile__title">{{ game.title }}</span>
-                <span class="tile__meta">{{ game.system }}</span>
-              </div>
-            </a>
-          }
-        </div>
-      }
-    </section>
-
-    <section class="shelf">
-      <div class="shelf__head">
-        <h3>Recently active for you</h3>
-        @if (data.recent.length > 0) {
-          <span class="shelf__summary">{{ data.recent.length }} titles</span>
+    @for (sectionId of visibleSections(); track sectionId) {
+      @switch (sectionId) {
+        @case ('libraryStats') {
+          <section class="library-card">
+            <h3>Your library</h3>
+            <div class="library-card__stats">
+              <p class="library-card__line">
+                <a routerLink="/" fragment="favorites"
+                  >{{ data.stats.myFavorites }} favorite{{ data.stats.myFavorites === 1 ? '' : 's' }}</a
+                >
+                <span aria-hidden="true"> · </span>
+                <span
+                  >{{ data.stats.myDownloads }} download{{ data.stats.myDownloads === 1 ? '' : 's' }}</span
+                >
+              </p>
+              <p class="library-card__line">
+                <a routerLink="/lists">{{ data.stats.myLists }} list{{ data.stats.myLists === 1 ? '' : 's' }}</a>
+                <span aria-hidden="true"> · </span>
+                <a routerLink="/physical"
+                  >{{ data.stats.physicalGames }} physical item{{
+                    data.stats.physicalGames === 1 ? '' : 's'
+                  }}</a
+                >
+              </p>
+            </div>
+          </section>
         }
-      </div>
-
-      @if (data.recent.length === 0) {
-        <ajax-empty-state
-          icon="history"
-          title="Nothing recent yet"
-          description="Popular downloads and activity will show up here."
-        />
-      } @else {
-        <div class="shelf__row">
-          @for (game of data.recent; track game.id) {
-            <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
-              <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
-                @if (coverFor(game); as cover) {
-                  <img
-                    class="tile__cover"
-                    [src]="cover"
-                    [alt]="game.title + ' cover'"
-                    loading="lazy"
-                    decoding="async"
-                  />
+        @case ('continuePlaying') {
+          <section class="shelf">
+            <div class="shelf__head">
+              <h3>Continue where you left off</h3>
+              @if (data.continuePlaying.length > 0) {
+                <a class="shelf__link" routerLink="/games" aria-label="Browse library">
+                  <ajax-icon name="chevron_right" />
+                </a>
+              }
+            </div>
+            @if (data.continuePlaying.length === 0) {
+              <ajax-empty-state
+                icon="history"
+                title="Nothing to continue"
+                description="Play or download a title and it will show up here."
+              />
+            } @else {
+              <div class="shelf__row">
+                @for (game of data.continuePlaying; track game.id) {
+                  <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+                    <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+                      @if (coverFor(game); as cover) {
+                        <img
+                          class="tile__cover"
+                          [src]="cover"
+                          [alt]="game.title + ' cover'"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      }
+                    </div>
+                    <div class="tile__body">
+                      <span class="tile__title">{{ game.title }}</span>
+                      <span class="tile__meta">{{ game.system }}</span>
+                    </div>
+                  </a>
                 }
               </div>
-              <div class="tile__body">
-                <span class="tile__title">{{ game.title }}</span>
-                <span class="tile__meta">{{ game.system }}</span>
+            }
+          </section>
+        }
+        @case ('recentlyAdded') {
+          <section class="shelf">
+            <div class="shelf__head">
+              <h3>Recently added</h3>
+              <a class="shelf__text-link" routerLink="/games">View all</a>
+            </div>
+            @if (data.recentlyAdded.length === 0) {
+              <ajax-empty-state
+                icon="library_add"
+                title="No games yet"
+                description="Imported titles will appear here."
+              />
+            } @else {
+              <div class="shelf__row">
+                @for (game of data.recentlyAdded; track game.id) {
+                  <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+                    <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+                      @if (coverFor(game); as cover) {
+                        <img
+                          class="tile__cover"
+                          [src]="cover"
+                          [alt]="game.title + ' cover'"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      }
+                    </div>
+                    <div class="tile__body">
+                      <span class="tile__title">{{ game.title }}</span>
+                      <span class="tile__meta">{{ game.system }}</span>
+                    </div>
+                  </a>
+                }
               </div>
-            </a>
+            }
+          </section>
+        }
+        @case ('favorites') {
+          <section class="shelf" id="favorites">
+            <div class="shelf__head">
+              <h3>Your favorites</h3>
+            </div>
+            @if (data.favorites.length === 0) {
+              <ajax-empty-state
+                icon="star"
+                title="No favorites yet"
+                description="Star titles in the shared library to pin them here."
+              />
+            } @else {
+              <div class="shelf__row">
+                @for (game of data.favorites; track game.id) {
+                  <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+                    <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+                      @if (coverFor(game); as cover) {
+                        <img
+                          class="tile__cover"
+                          [src]="cover"
+                          [alt]="game.title + ' cover'"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      }
+                    </div>
+                    <div class="tile__body">
+                      <span class="tile__title">{{ game.title }}</span>
+                      <span class="tile__meta">{{ game.system }}</span>
+                    </div>
+                  </a>
+                }
+              </div>
+            }
+          </section>
+        }
+        @case ('systems') {
+          <section class="shelf">
+            <div class="shelf__head">
+              <h3>Browse by system</h3>
+              <a class="shelf__text-link" [routerLink]="systemsViewAllLink()">View all</a>
+            </div>
+            @if (data.systems.length === 0) {
+              <ajax-empty-state
+                icon="devices"
+                title="No systems yet"
+                description="Systems appear here once games are in the library."
+              />
+            } @else {
+              <div class="shelf__row shelf__row--systems">
+                @for (system of data.systems; track system.id) {
+                  <a
+                    class="system-tile"
+                    routerLink="/games"
+                    [queryParams]="{ system: system.shortName }"
+                  >
+                    <div class="system-tile__art" [class.system-tile__art--empty]="!logoFor(system)">
+                      @if (logoFor(system); as logo) {
+                        <img
+                          class="system-tile__logo"
+                          [src]="logo"
+                          [alt]="system.name"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <span class="system-tile__initial">{{ system.shortName.slice(0, 3) }}</span>
+                      }
+                    </div>
+                    <div class="system-tile__body">
+                      <span class="system-tile__title">{{ system.shortName }}</span>
+                      <span class="system-tile__meta">{{ system.gameCount }} games</span>
+                    </div>
+                  </a>
+                }
+              </div>
+            }
+          </section>
+        }
+        @case ('recommendations') {
+          <section class="shelf">
+            <div class="shelf__head">
+              <h3>You might also like</h3>
+              <ajax-button
+                variant="basic"
+                icon="refresh"
+                [disabled]="refreshingRecs()"
+                (clicked)="refreshRecommendations()"
+              >
+                Refresh
+              </ajax-button>
+            </div>
+            @if (data.recommendations.length === 0) {
+              <ajax-empty-state
+                icon="auto_awesome"
+                title="No suggestions yet"
+                description="Star a few favorites to improve recommendations."
+              />
+            } @else {
+              <div class="shelf__row">
+                @for (game of data.recommendations; track game.id) {
+                  <a class="tile" [routerLink]="['/games', game.id]" [style.--accent]="game.accent">
+                    <div class="tile__art" [class.tile__art--empty]="!coverFor(game)">
+                      @if (coverFor(game); as cover) {
+                        <img
+                          class="tile__cover"
+                          [src]="cover"
+                          [alt]="game.title + ' cover'"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      }
+                    </div>
+                    <div class="tile__body">
+                      <span class="tile__title">{{ game.title }}</span>
+                      <span class="tile__meta">{{ game.system }}</span>
+                    </div>
+                  </a>
+                }
+              </div>
+            }
+          </section>
+        }
+        @case ('attention') {
+          @if (isAdmin && data.attention.length) {
+            <section class="attention">
+              <div class="attention__head">
+                <h3>Needs your attention</h3>
+                <span class="attention__summary">Admin follow-ups</span>
+              </div>
+              <div class="attention__chips">
+                @for (item of data.attention; track item.id) {
+                  <a class="attention__item" [routerLink]="item.link">
+                    <ajax-status-chip [label]="item.count + ' · ' + item.label" [status]="item.tone" />
+                  </a>
+                }
+              </div>
+            </section>
           }
-        </div>
+        }
       }
-    </section>
+    }
   </section>
 } @else {
   <ajax-empty-state

@@ -17,6 +17,10 @@ public static class SchemaPatches
         await EnsureColumnAsync(db, "Games", "PublicCriticScore", "INTEGER NULL", cancellationToken);
         await EnsureColumnAsync(db, "Games", "PublicRatingProvider", "TEXT NOT NULL DEFAULT ''", cancellationToken);
         await EnsureColumnAsync(db, "Games", "PublicRatingScale", "INTEGER NOT NULL DEFAULT 100", cancellationToken);
+        await EnsureColumnAsync(db, "Games", "CreatedAt", "TEXT NOT NULL DEFAULT ''", cancellationToken);
+        await EnsureColumnAsync(db, "UserGameStates", "LastPlayedAt", "TEXT NULL", cancellationToken);
+        await EnsureColumnAsync(db, "Users", "PreferencesJson", "TEXT NULL", cancellationToken);
+        await BackfillGameCreatedAtAsync(db, cancellationToken);
         await EnsureGameReviewsTableAsync(db, cancellationToken);
         await EnsureGameCuratedReviewsTableAsync(db, cancellationToken);
         await EnsurePublicEnrichmentStateTableAsync(db, cancellationToken);
@@ -319,6 +323,18 @@ public static class SchemaPatches
             """
             CREATE INDEX IF NOT EXISTS "IX_PhysicalItems_GameId"
             ON "PhysicalItems" ("GameId");
+            """,
+            cancellationToken);
+    }
+
+    private static async Task BackfillGameCreatedAtAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        // Existing rows may have empty CreatedAt after ADD COLUMN with DEFAULT ''.
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE "Games"
+            SET "CreatedAt" = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+            WHERE "CreatedAt" IS NULL OR "CreatedAt" = '';
             """,
             cancellationToken);
     }

@@ -8,6 +8,8 @@ public class AppUser
     public string Role { get; set; } = "standard";
     public bool Enabled { get; set; } = true;
     public string Initials { get; set; } = string.Empty;
+    /// <summary>JSON blob for per-user UI layout preferences (dashboard + nav).</summary>
+    public string? PreferencesJson { get; set; }
 
     public ICollection<UserGameState> GameStates { get; set; } = [];
 }
