@@ -196,6 +196,13 @@ export class GamesApi {
     return this.http.post<GameDetail>(`/games/${id}/favorite`);
   }
 
+  recordPlay(id: string): Observable<void> {
+    if (this.mode.isMock()) {
+      return mockDelay(undefined as void, 80);
+    }
+    return this.http.postVoid(`/games/${id}/play`);
+  }
+
   listReviews(id: string): Observable<GameReview[]> {
     if (this.mode.isMock()) {
       return mockDelay([] as GameReview[], 120);

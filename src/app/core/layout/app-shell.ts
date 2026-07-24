@@ -1,12 +1,15 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { AUTH0_APP_ORIGIN } from '../auth/auth0.config';
 import { SessionService } from '../auth/session.service';
 import { LibrarySettingsService } from '../config/library-settings.service';
+import { UserPreferencesService } from '../preferences/user-preferences.service';
 import { AjaxButton, AjaxDrawer, AjaxIcon, AjaxToolbar, AjaxTooltip } from '../../shared/ui';
 import { APP_NAV_ITEMS, NavItem } from './nav-items';
 import { APP_VERSION } from '../version';
@@ -18,6 +21,8 @@ import { APP_VERSION } from '../version';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    MatMenuModule,
+    MatIconModule,
     AjaxDrawer,
     AjaxToolbar,
     AjaxButton,
@@ -33,6 +38,7 @@ export class AppShell {
   private readonly auth = inject(AuthService);
   readonly sessionService = inject(SessionService);
   private readonly librarySettings = inject(LibrarySettingsService);
+  private readonly userPrefs = inject(UserPreferencesService);
   protected readonly window = window;
   readonly appVersion = APP_VERSION;
 
@@ -64,7 +70,23 @@ export class AppShell {
     { initialValue: 'Retrojax' },
   );
 
-  readonly navItems = computed(() => APP_NAV_ITEMS.filter((item) => this.canSee(item)));
+  private readonly allowedNavItems = computed(() =>
+    APP_NAV_ITEMS.filter((item) => this.canSee(item)),
+  );
+
+  readonly primaryNavItems = computed(() => {
+    const more = this.userPrefs.loaded() ? this.userPrefs.navMorePaths() : new Set<string>();
+    return this.allowedNavItems().filter((item) => !more.has(item.path));
+  });
+
+  readonly moreNavItems = computed(() => {
+    if (!this.userPrefs.loaded()) {
+      return [] as NavItem[];
+    }
+    const more = this.userPrefs.navMorePaths();
+    return this.allowedNavItems().filter((item) => more.has(item.path));
+  });
+
   readonly displayName = computed(() => this.sessionService.displayName() ?? 'Guest');
   readonly roleLabel = computed(() => this.sessionService.role()?.replace('_', ' ') ?? '');
   readonly libraryName = computed(() => this.librarySettings.libraryName());
@@ -86,6 +108,7 @@ export class AppShell {
 
   constructor() {
     this.librarySettings.ensureLoaded();
+    this.userPrefs.ensureLoaded();
     this.breakpoints.observe([Breakpoints.Handset, Breakpoints.TabletPortrait]).subscribe((result) => {
       this.drawerOpen.set(!result.matches);
       if (result.matches) {

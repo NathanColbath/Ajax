@@ -32,6 +32,13 @@ export class ApiClient {
     return this.http.post<T>(this.url(path), body ?? null);
   }
 
+  /** POST that expects 204 No Content (or empty body). */
+  postVoid(path: string, body?: unknown): Observable<void> {
+    return this.http
+      .post(this.url(path), body ?? null, { responseType: 'text' })
+      .pipe(map(() => undefined));
+  }
+
   /** Multipart POST with upload transfer progress (0–100). */
   postFormWithProgress<T>(path: string, form: FormData): Observable<UploadProgressEvent<T>> {
     return this.http

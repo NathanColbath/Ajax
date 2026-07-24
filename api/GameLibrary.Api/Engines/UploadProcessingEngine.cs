@@ -280,6 +280,7 @@ public class UploadProcessingEngine(
             Rating = 0,
             RatingCount = 0,
             DownloadCount = 0,
+            CreatedAt = DateTimeOffset.UtcNow,
         };
 
         db.Games.Add(game);

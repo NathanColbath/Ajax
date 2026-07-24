@@ -18,6 +18,7 @@ public class Game
     public double Rating { get; set; }
     public int RatingCount { get; set; }
     public int DownloadCount { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public string Description { get; set; } = string.Empty;
     public string Publisher { get; set; } = string.Empty;
     public string Developer { get; set; } = string.Empty;

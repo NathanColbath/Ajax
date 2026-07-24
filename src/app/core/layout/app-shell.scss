@@ -127,6 +127,15 @@
   }
 }
 
+.shell__more-trigger {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
 .shell__nav--collapsed .shell__link {
   justify-content: center;
   padding-inline: 0;

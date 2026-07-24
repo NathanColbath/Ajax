@@ -1,6 +1,7 @@
 export interface DashboardStats {
   myFavorites: number;
   myDownloads: number;
+  myLists: number;
   libraryGames: number;
   physicalGames: number;
   systems: number;
@@ -24,11 +25,22 @@ export interface DashboardRecentGame {
   hasArt: boolean;
 }
 
+export interface DashboardSystemTile {
+  id: string;
+  name: string;
+  shortName: string;
+  gameCount: number;
+  hasLogo: boolean;
+}
+
 export interface DashboardSnapshot {
   userId: string;
   displayName: string;
   stats: DashboardStats;
   attention: DashboardAttentionItem[];
-  recent: DashboardRecentGame[];
+  continuePlaying: DashboardRecentGame[];
+  recentlyAdded: DashboardRecentGame[];
   favorites: DashboardRecentGame[];
+  systems: DashboardSystemTile[];
+  recommendations: DashboardRecentGame[];
 }

@@ -28,7 +28,7 @@
     </a>
 
     <nav class="shell__links" aria-label="Primary">
-      @for (item of navItems(); track item.path) {
+      @for (item of primaryNavItems(); track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="is-active"
@@ -42,6 +42,34 @@
           <ajax-icon [name]="item.icon" />
           <span class="shell__link-label">{{ item.label }}</span>
         </a>
+      }
+
+      @if (moreNavItems().length > 0) {
+        <button
+          type="button"
+          class="shell__link shell__more-trigger"
+          [matMenuTriggerFor]="moreMenu"
+          [ajaxTooltip]="navCollapsed() && !isHandset() ? 'More' : ''"
+          ajaxTooltipPosition="right"
+          [ajaxTooltipDisabled]="!(navCollapsed() && !isHandset())"
+        >
+          <ajax-icon name="more_horiz" />
+          <span class="shell__link-label">More</span>
+        </button>
+        <mat-menu #moreMenu="matMenu" xPosition="after" yPosition="below">
+          @for (item of moreNavItems(); track item.path) {
+            <a
+              mat-menu-item
+              [routerLink]="item.path"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: item.exact === true }"
+              (click)="onNavClick()"
+            >
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </mat-menu>
       }
     </nav>
 

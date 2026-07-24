@@ -22,6 +22,16 @@ public record LibraryUserDto(
 
 public record InviteUserRequest(string Name, string Email, string Role);
 
+public record UserPreferencesDto(
+    IReadOnlyList<string> DashboardSectionOrder,
+    IReadOnlyList<string> DashboardHidden,
+    IReadOnlyList<string> NavMorePaths);
+
+public record UpdateUserPreferencesRequest(
+    IReadOnlyList<string>? DashboardSectionOrder,
+    IReadOnlyList<string>? DashboardHidden,
+    IReadOnlyList<string>? NavMorePaths);
+
 // ── Games ─────────────────────────────────────────────────────────────────────
 
 public record GameSummaryDto(
@@ -421,6 +431,7 @@ public record FactoryWipeResultDto(
 public record DashboardStatsDto(
     int MyFavorites,
     int MyDownloads,
+    int MyLists,
     int LibraryGames,
     int PhysicalGames,
     int Systems,
@@ -441,13 +452,23 @@ public record DashboardRecentGameDto(
     string Accent,
     bool HasArt);
 
+public record DashboardSystemTileDto(
+    string Id,
+    string Name,
+    string ShortName,
+    int GameCount,
+    bool HasLogo);
+
 public record DashboardSnapshotDto(
     string UserId,
     string DisplayName,
     DashboardStatsDto Stats,
     IReadOnlyList<DashboardAttentionItemDto> Attention,
-    IReadOnlyList<DashboardRecentGameDto> Recent,
-    IReadOnlyList<DashboardRecentGameDto> Favorites);
+    IReadOnlyList<DashboardRecentGameDto> ContinuePlaying,
+    IReadOnlyList<DashboardRecentGameDto> RecentlyAdded,
+    IReadOnlyList<DashboardRecentGameDto> Favorites,
+    IReadOnlyList<DashboardSystemTileDto> Systems,
+    IReadOnlyList<DashboardRecentGameDto> Recommendations);
 
 // ── Logs ──────────────────────────────────────────────────────────────────────
 
